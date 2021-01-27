@@ -38,7 +38,7 @@ HTTPClient http;        //to keep alive
 WiFiUDP udp;            //for NTP
 String payload;         //to handle returned payload
 #define REFRESH_DELAY (600000UL)
-#define OWM_API_KEY "f952b1d901054c3f4064574483a4cf24"
+#define OWM_API_KEY "YOUR OWM KEY GOES HERE"
 #define NTP_TIMESTAMP_DELTA  2208988800ull
 
 char k[40]="";
