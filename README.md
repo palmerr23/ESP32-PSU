@@ -10,3 +10,5 @@ The front and supporting panels were cut from 2mm acrylic and the back panel fro
 The laser templates are designed for a Pro'skit 203-115B instrument case (Jaycar HB5910, Altronics H0482). The templates have been tested with LightBurn, but should work with other laser cutter software. 
 
 My front panel was made with clear acrylic, coated on the BACK with black spray paint. Wood filler, in a contrasting colour, was squeegeed into the etched labels and then polished off with very fine DRY sandpaper (240 grit). A final coat of clear spray was then appled to seal the wood filler and restore a gloss finish to the acrylic.
+
+These files relate to a project published in Silicon Chip magazine in 2021. https://www.siliconchip.com.au/
