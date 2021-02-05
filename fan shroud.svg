@@ -1,0 +1,126 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   width="260.99997mm"
+   height="89mm"
+   viewBox="0 0 260.99996 89"
+   version="1.1"
+   id="svg8"
+   inkscape:version="1.0.1 (3bc2e813f5, 2020-09-07)"
+   sodipodi:docname="fan shroud.svg">
+  <defs
+     id="defs2">
+    <rect
+       x="211.09564"
+       y="53.504345"
+       width="13.330434"
+       height="5.4782605"
+       id="rect92" />
+    <rect
+       x="198.13043"
+       y="52.226086"
+       width="8.217391"
+       height="6.2086954"
+       id="rect86" />
+    <rect
+       x="58.799995"
+       y="64.643471"
+       width="66.834778"
+       height="11.686956"
+       id="rect1655" />
+  </defs>
+  <sodipodi:namedview
+     id="base"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:pageopacity="0.0"
+     inkscape:pageshadow="2"
+     inkscape:zoom="2.2903181"
+     inkscape:cx="336.70292"
+     inkscape:cy="179.91757"
+     inkscape:document-units="mm"
+     inkscape:current-layer="layer6"
+     inkscape:document-rotation="0"
+     showgrid="false"
+     inkscape:window-width="1920"
+     inkscape:window-height="1027"
+     inkscape:window-x="1912"
+     inkscape:window-y="-8"
+     inkscape:window-maximized="1"
+     fit-margin-left="6"
+     fit-margin-top="6"
+     fit-margin-right="6"
+     fit-margin-bottom="6"
+     inkscape:snap-global="false"
+     showguides="false"
+     inkscape:guide-bbox="true">
+    <sodipodi:guide
+       position="53.614711,-3.7641223"
+       orientation="1,0"
+       id="guide63" />
+    <sodipodi:guide
+       position="-14.868576,40.597893"
+       orientation="0,-1"
+       id="guide65" />
+    <sodipodi:guide
+       position="-59.044201,22.466498"
+       orientation="1,0"
+       id="guide976" />
+  </sodipodi:namedview>
+  <metadata
+     id="metadata5">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title></dc:title>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <g
+     inkscape:groupmode="layer"
+     id="layer6"
+     inkscape:label="back panel"
+     style="display:inline"
+     transform="translate(31.405504,8.1872562)">
+    <circle
+       style="display:inline;vector-effect:non-scaling-stroke;fill:none;stroke:#008000;stroke-width:1.2;stroke-miterlimit:12.19999981;stroke-dasharray:none"
+       id="path144-6"
+       cx="29.89572"
+       cy="16.124649"
+       r="1.5137808" />
+    <circle
+       style="display:inline;vector-effect:non-scaling-stroke;fill:none;stroke:#008000;stroke-width:1.2;stroke-miterlimit:12.19999981;stroke-dasharray:none"
+       id="path144-4"
+       cx="29.89572"
+       cy="56.027443"
+       r="1.5137808" />
+    <path
+       id="path857"
+       style="vector-effect:non-scaling-stroke;fill:none;stroke:#008000;stroke-width:1.25821;stroke-miterlimit:12.2"
+       d="m 210.92969,33.177734 -0.26953,0.871094 v 63.867188 c 22.82906,14.220744 37.70438,44.543934 37.70507,69.378904 -6.9e-4,24.83498 -16.18587,56.46802 -37.70507,69.37891 v 50.58594 h 113.33007 l 16,14.06835 v 3.87305 h 24.79688 v -16.57226 h 33.39062 v 16.57226 h 29.67735 v -29.40039 l 59.37539,-14.72266 V 34.132812 l -0.35156,-0.955078 z"
+       transform="matrix(0.26458333,0,0,0.26458333,-31.405504,-8.1872562)"
+       sodipodi:nodetypes="ccccccccccccccccccc" />
+    <path
+       style="vector-effect:non-scaling-stroke;fill:#ff0000;stroke:#ff0000;stroke-width:1.5;stroke-miterlimit:8.10000038;stroke-dasharray:18,18;stroke-dashoffset:0"
+       d="M 35.899416,-2.1540084 V 76.28579"
+       id="path870" />
+    <path
+       style="display:inline;vector-effect:non-scaling-stroke;fill:#ff0000;stroke:#ff0000;stroke-width:1.5;stroke-miterlimit:8.10000038;stroke-dasharray:18,18;stroke-dashoffset:0"
+       d="M 58.493367,-2.1540084 V 76.285992"
+       id="path870-1" />
+    <path
+       style="display:inline;vector-effect:non-scaling-stroke;fill:#ff0000;stroke:#ff0000;stroke-width:1.5;stroke-miterlimit:8.10000038;stroke-dasharray:12,3,1.5,3;stroke-dashoffset:7.49998617"
+       d="M 81.739495,-2.1540084 V 76.285992"
+       id="path870-2" />
+  </g>
+</svg>
