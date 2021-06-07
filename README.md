@@ -3,6 +3,8 @@ A general purpose ESP32 breakout board, optimised for lab instrument control, an
 
 Two separate versions of the Open Weather code are provided for the 2.8" and 3.5" display options. They should be compiled and loaded using your own OWM token. https://openweathermap.org/appid
 
+For the Hybrid Power Supply, only compiled code is provided for 2.8" and 3.5" versions (ILI9341 and ILI9488 LCD controllers) because the number of libraries and complexity of code would make it difficult for others to get a clean compile.   
+
 The Laser_Templates folder has SVG files for the front and rear panels of the power supply. There are separate versions for the 2.8" and 3.5" display options. In each front panel file there are two templates: the front panel itself (with colour coded cut [outlines] and etch [labels] elements) and a second template for a panel to support the display and controller PCBs (avoiding front panel screws). A reinforcing plate for the binding posts is also included. It is fitted behnd the front panel.
 
 The front and supporting panels were cut from 2mm acrylic and the back panel from the plastic insert provided with the case.
