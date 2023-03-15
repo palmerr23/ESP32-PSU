@@ -1,4 +1,7 @@
 # ESP32-PSU
+
+These files relate to a project published in Silicon Chip magazine in May/June 2021. https://www.siliconchip.com.au/
+
 A general purpose ESP32 breakout board, optimised for lab instrument control, and a single channel hybrid power supply module.
 
 Two separate versions of the Open Weather code are provided for the 2.8" and 3.5" display options. They should be compiled and loaded using your own OWM token. https://openweathermap.org/appid
@@ -13,4 +16,4 @@ The laser templates are designed for a Pro'skit 203-115B instrument case (Jaycar
 
 My front panel was made with clear acrylic, coated on the BACK with black spray paint. Wood filler, in a contrasting colour, was squeegeed into the etched labels and then polished off with very fine DRY sandpaper (240 grit). A final coat of clear spray was then appled to seal the wood filler and restore a gloss finish to the acrylic.
 
-These files relate to a project published in Silicon Chip magazine in May/June 2021. https://www.siliconchip.com.au/
+The project can be compiled from source, with the usual caveats that external libraries may bnot be backward compatible. 
