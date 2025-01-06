@@ -56,13 +56,11 @@ char * getUDP(){
 		Serial.printf("UDP pkt doesn't start with SCPI\n");
 		return NULL; 
 	}
-	/*
-	if (SCpkt.grp != pSet[0].trackGrp && SCpkt.grp != -1) //  my tracking group or global message
+	if (SCpkt.grp != pSetA.trackGrp && SCpkt.grp != -1) //  my tracking group or global message
 	{
-		//Serial.printf("UDP pkt not for my [%i] group = %i\n", pSet[0].trackGrp, SCpkt.grp);
+		Serial.printf("UDP pkt not for my [%i] group = %i\n", pSetA.trackGrp, SCpkt.grp);
 		return NULL;
 	}
-	*/
 	// good packet	
 	UDPsourceIP = Udp.remoteIP();		// save the source info for response
 	UDPsourcePort = Udp.remotePort();

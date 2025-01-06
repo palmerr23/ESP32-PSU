@@ -272,20 +272,17 @@ instID myID = {{192,168,50,1}, {192,168,50,1},{192,168,50,0}, LOCAL_SS, LOCAL_PA
 bool IamAP = false;	// am I the AP?
 
 // screen pixel limits
-// Portrait mode
-// some sx() and sy() use thes max values
-#define HXMAX 240
-#define VYMAX 320
+// screen pixel limits
 #ifdef ILI9341
-	#define HMAX 240
-	#define VMAX 320
-	#define SCREENROT 4 
-	#define TOUCHROT 2
-#else // ILI9488
 	#define HMAX 320
-	#define VMAX 480
-	#define SCREENROT 2 
-	#define TOUCHROT 2
+	#define VMAX 240
+	#define SCREENROT 3 // SCREEN rotation default
+	#define TOUCHROT 1
+#else // ILI9488
+	#define HMAX 480
+	#define VMAX 320
+	#define SCREENROT 1 // SCREEN rotation default
+	#define TOUCHROT 1
 #endif
 
 // various global defs

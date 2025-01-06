@@ -32,27 +32,27 @@ void IRAM_ATTR ads_ISR(){
   //adsISRcount++; 
 }
 
-void adsProcess(void){	
+void adsProcess(void){
   if (adsReady)
-		{	// convert latest reading to "volts read" and "read-world" values
-	//Serial.print("%");
-			if(adsMux == 1) // flag a complete set of readings
-			{
-				adSProcessCount++;  // updated each 4 cycles = 16mS @ 250 sps
-				adsSetready = true; // complete set of readings has been processed
-			}
-			
-			// don't bother about turning interrupts off - single shot mode
-			adsReadings[adsMux] = ads.getLastConversionResults();	
-		// conversions now done just before control() 
-		//myADC[0][adsMux].curVolts = convertHAL(adsReadings[adsMux], &ADS_HAL); 
-		//myADC[0][adsMux].curVal = myADC[0][adsMux].convert(myADC[0][adsMux].curVolts, &myADC[0][adsMux]);
-								 
-			// start next reading
-		adsMux = ++adsMux % NUMADC;
-		ads.adsStartSingleRdy(adsConfig | ADS_GAIN, adsMux); 
-		adsReady = false; 
-		//Serial.print("&");
+  {	// convert latest reading to "volts read" and "read-world" values
+//Serial.print("%");
+    if(adsMux == 1) // flag a complete set of readings
+	{
+	  adSProcessCount++;  // updated each 4 cycles = 16mS @ 250 sps
+	  adsSetready = true; // complete set of readings has been processed
+	}
+	  
+	  // don't bother about turning interrupts off - single shot mode
+    adsReadings[adsMux] = ads.getLastConversionResults();	
+	// conversions now done just before control() 
+	//myADC[adsMux].curVolts = convertHAL(adsReadings[adsMux], &ADS_HAL); 
+	//myADC[adsMux].curVal = myADC[adsMux].convert(myADC[adsMux].curVolts, &myADC[adsMux]);
+						   
+    // start next reading
+	adsMux = ++adsMux % NUMADC;
+    ads.adsStartSingleRdy(adsConfig | ADS_GAIN, adsMux); 
+    adsReady = false; 
+	//Serial.print("^");
   }
 }
 
@@ -65,11 +65,11 @@ void adsTest()
   pinMode(ADSRDY, INPUT_PULLUP);
   ads.begin(400000);  // I2C speed, 1000000 (1M = FMPlus) is probably OK, 400000 is safe
   Serial.println("ADS BEGIN done");
-  Wire.beginTransmission (ADS_ADDR0);
+  Wire.beginTransmission (ADS_ADDR);
 	if (Wire.endTransmission () == 0)
-		Serial.printf("Found ADS1115 at 0x%x\n", ADS_ADDR0);
+		Serial.printf("Found ADS1115 at 0x%x\n", ADS_ADDR);
 	else
-		Serial.printf("ADS1115 not found at 0x%x\n", ADS_ADDR0);
+		Serial.printf("ADS1115 not found at 0x%x\n", ADS_ADDR);
   //  delay(100);
   //attachInterrupt(digitalPinToInterrupt(ADSRDY), ads_ISR, FALLING);
  // Serial.println("ATTACH int done");
@@ -91,30 +91,30 @@ void adsTest()
 // signal = logical channel [index to myADC]
 /*
 float  readADSreal(uint8_t signal){
-	//uint8_t ADSchan = myADC[0][signal].ADCchannel;
-	//float real = myADC[0][signal].minVal +  ADS_HAL.curCount * (myADC[0][signal].maxVal - myADC[0][signal].minVal)/(1 << ADSBITS);
-	//Serial.printf("[CH: %i, CT: %i, V: %f]\n",signal, myADC[0][signal].curCount, real);
-	return myADC[0][adsMux].curVal;
+	//uint8_t ADSchan = myADC[signal].ADCchannel;
+	//float real = myADC[signal].minVal +  ADS_HAL.curCount * (myADC[signal].maxVal - myADC[signal].minVal)/(1 << ADSBITS);
+	//Serial.printf("[CH: %i, CT: %i, V: %f]\n",signal, myADC[signal].curCount, real);
+	return myADC[adsMux].curVal;
 }
 */
 /*
 float  readADSvolts(uint8_t signal){
 	// value already updated by interrupt
-	//uint8_t ADSchan = myADC[0][signal].ADCchannel;
-	//float volts = myADC[0][signal].minVolts +  ADS_HAL.curCount * (myADC[0][signal].maxVolts - myADC[0][signal].minVolts)/(1 << ADSBITS);
+	//uint8_t ADSchan = myADC[signal].ADCchannel;
+	//float volts = myADC[signal].minVolts +  ADS_HAL.curCount * (myADC[signal].maxVolts - myADC[signal].minVolts)/(1 << ADSBITS);
 	//Serial.printf("[%f]", volts);
-	//Serial.printf("[CH: %i, CT: %i, V: %f]\n",signal, myADC[0][signal].curCount, volts);
-	return myADC[0][signal].curVolts ;
+	//Serial.printf("[CH: %i, CT: %i, V: %f]\n",signal, myADC[signal].curCount, volts);
+	return myADC[signal].curVolts ;
 
 }
 */
 /*
 float  readADStherm(uint8_t signal){ // not used, now converted correctly in adsProcess()
-	//uint8_t ADSchan = myADC[0][signal].ADCchannel;
+	//uint8_t ADSchan = myADC[signal].ADCchannel;
     //float volts = myADCcalls[signal].readVolts(signal);
-	//float degrees =  convertTherm(volts, &myADC[0][signal]); // FIX ME!
-	//Serial.printf("[CH: %i, CT: %i, V: %f]\n",signal, myADC[0][signal].curCount, degrees);
-	return myADC[0][adsMux].curVal;
+	//float degrees =  convertTherm(volts, &myADC[signal]); // FIX ME!
+	//Serial.printf("[CH: %i, CT: %i, V: %f]\n",signal, myADC[signal].curCount, degrees);
+	return myADC[adsMux].curVal;
 }
 */
 

@@ -43,7 +43,7 @@ portMUX_TYPE mux = portMUX_INITIALIZER_UNLOCKED;
 #define ADC_CHANNELS 4
 #define ADSMUX_START 0  // channel for first reading
 
-#define NUMCHANNELS 2 // number of PSU channels 
+#define NUMCHANNELS 1 // number of slave instruments controlled
 uint8_t currentChannel = 0; // index value of current channel (local control) - may be different from SCIPchan
 
 struct chPins{
@@ -53,9 +53,9 @@ struct chPins{
 	{SW_ON, SW_OFF}
 };
 
-//I2C and limit settings
-#define ADS_ADDR0 0x48	// default locations for ADS1115
-#define ADS_ADDR1 0x49
+
+/***************** CHANNEL 1 definitions ***********************/
+#define ADS_ADDR 0x48
 //#define ADS_RATE ADS1115_REG_CONFIG_DR_128SPS
 #define ADS_RATE ADS1115_REG_CONFIG_DR_250SPS // I2C commands take 500uS, so no point in very fast conversion
 //#define ADS_RATE ADS1115_REG_CONFIG_DR_475SPS	// ~10mS for all 4 readings
@@ -64,17 +64,14 @@ struct chPins{
 
 #define ADS_GAIN GAIN_TWO // FSD: GAIN_ONE = 4.096V; GAIN_TWO = 2.048V 
 #define ADS_MAXV 2.048
-Adafruit_ADS1115 ads(ADS_ADDR0);  
+Adafruit_ADS1115 ads(ADS_ADDR);  
 Adafruit_MCP4725 dac;
 
-#define DPOT_BASE    0x3D 	// MCP45 I2C address: base = 0x3C
-#define DAC_BASE	0x60 	// MCP 4725
-
+#define DIGI_V      0x3D 	// MCP45 I2C address: base = 0x3C
+#define DAC_ADDR	0x60 	// MCP 4725
 #define DAC_MASK 	0x0fff  // 12 bits [0..4096]
-#define VOMIN			(0.0)
-#define VOMAX		  (32.0)	// max output voltage setting (float)
-#define IMIN			(0.01)
-#define IMAX			(5)	// max set current
+#define VOMAX		 (26.0)	// max output voltage setting (float)
+#define IMAX		 (5)	// max set current
 #define SHORTCIRCUIT (6.0)  // When to trip short circuit protection - saved in HAL profile
 #define VDROPOUT     (3.6)  // dropout voltage of final reg (i.e. diff between final and SMPS target settings
                             // just enough to regulate well under load
@@ -82,7 +79,7 @@ Adafruit_MCP4725 dac;
 //#define DIGI_S      0x3C 	// NOT USED 							
 //#define VMAXS		 (32.0)	// max SMPS voltage setting
 //#define VREFS		  (1.2)	// reference value (control voltage divider target)
-digiPot potV = {0, VOMAX, MCPX51, MCP45X, DPOT_BASE, 1};
+digiPot potV = {0, VOMAX, MCPX51, MCP45X, DIGI_V, 1};
 //digiPot potS = {VDROPOUT, VMAXS, MCPX51, MCP45X, DIGI_S, 1}; 
 
 // need to define ADS_GAIN  // FSD: GAIN_ONE = 4.096V; GAIN_TWO = 2.048V 
@@ -105,28 +102,9 @@ float  readADSvolts1(uint8_t signal);
 	#define TEMP 2
 	#define VIN  3
 
-inADC myADC[NUMCHANNELS][ADC_CHANNELS] = {
-	{
+inADC myADC[ADC_CHANNELS] = {
 	  // current
-			{0.50, 0.0, -0.1, SHORTCIRCUIT, // lowError: input is offset by Vdiode/2 * 4.125 = 0.145V - should not get to this value.
-				0.00, 0.0, 10.0,  // maxVal: modified by CALibration
-				0.144, 0.0, ADS_MAXV,   "A", "Iout", IPIN, false, false},
-			// volts out 
-			{12.5, 0.0, -0.3, 30.0,  // lowError: can't go below 0 counts
-				0.0, 0.0, 15.32 * ADS_MAXV,  // maxVal: modified by CALibration
-				0.00, 0, ADS_MAXV,  "V", "Vout", VPIN, false, false},		  
-			// temp: standard curve 10k NTC thermistor , 10k to +3v3 (Vishay NTCALUG02A-103) - parameters for Steinberg equation
-			{26.0, 0.0, 0.0, 80.0,  
-				0.0, 10000.0, 25.0, // ( XX, R SERIES, NOMTEMP) therm data = 25, cal better at 30 (25-40 C)
-				10000, 3984, 3.3,   // (NOM R, B COEFF, DIV VOLTS) 
-				"C", "TEMP", TPIN, false, true},
-			// volts in (voltsS)
-			{8.0, 0.0, -0.1, 35.0, 
-				0.0, 0.0, 15.32 * ADS_MAXV, 
-				0.00, 0, ADS_MAXV,    "V", "Vin", VPIN_S, false, false} // 15.46 = 4.7K & 68k voltage divider; 11 = 4.7k 7 47k
-			
-	},{
-		{0.50, 0.0, -0.1, SHORTCIRCUIT, // lowError: input is offset by Vdiode/2 * 4.125 = 0.145V - should not get to this value.
+	  {0.50, 0.0, -0.1, SHORTCIRCUIT, // lowError: input is offset by Vdiode/2 * 4.125 = 0.145V - should not get to this value.
 		  0.00, 0.0, 10.0,  // maxVal: modified by CALibration
 		  0.144, 0.0, ADS_MAXV,   "A", "Iout", IPIN, false, false},
 	  // volts out 
@@ -142,7 +120,7 @@ inADC myADC[NUMCHANNELS][ADC_CHANNELS] = {
 	  {8.0, 0.0, -0.1, 35.0, 
 		  0.0, 0.0, 15.32 * ADS_MAXV, 
 		  0.00, 0, ADS_MAXV,    "V", "Vin", VPIN_S, false, false} // 15.46 = 4.7K & 68k voltage divider; 11 = 4.7k 7 47k
-	}};
+	};
 
 ADC_callbacks myADCcalls[ADC_CHANNELS] = {
 	{&readADSvolts1, &convertADC},
@@ -157,7 +135,7 @@ ADC_callbacks myADCcalls[ADC_CHANNELS] = {
 	#define VOUT 1
 	#define IOUT 2
 	#define TEMP 3
-inADC myADC[0][ADC_CHANNELS] = {
+inADC myADC[ADC_CHANNELS] = {
 	  // volts out
 	  {8.0, 0.0, 0.0, 31.0, 
 		  0.0, 0.0, 15.32 * ADS_MAXV, 
@@ -188,7 +166,7 @@ inADC myADC[0][ADC_CHANNELS] = {
 // functions to allow callbacks to library functions
 // position in code is significant - after myADC is defined
 float readADSvolts1(uint8_t signal){
-	return myADC[0][signal].curVolts;
+	return myADC[signal].curVolts;
 }
 
 // settings BEFORE saved values have been read from EEPROM
@@ -198,9 +176,9 @@ float readADSvolts1(uint8_t signal){
 #define MCPMAXVAL 255
 
 // ********** calculate these from circuit values
-#define STEPS_VOLT     (7.88)   // number of coarse setting steps to change vReadingA by 1V (slightly conservative) 
+#define STEPS_VOLT     (7.88)   // number of coarse setting steps to change vReading by 1V (slightly conservative) 
 #define VOLTS_STEP		(0.13)	// volts per coarse setting step
-#define F_STEPS_VOLT   (11800)   	// number of fine setting steps to change vReadingA by 1V (slightly conservative) was 900
+#define F_STEPS_VOLT   (11800)   	// number of fine setting steps to change vReading by 1V (slightly conservative) was 900
 #define FPOL            (1)   	// polarity of fine control
 #define MS_CYCLE		(16)	// how often control() is called in mS (1/4 of ADS_RATE)
 
@@ -244,86 +222,77 @@ float readADSvolts1(uint8_t signal){
 //#define ADCBITS     12
 //#define MAXADC      ((1 << ADCBITS) - 1) // max adc count
 
-// TRACKING MODES
-#define TRA_IND	  0
-#define TRA_LINK	1
-#define TRA_SER	  2
-#define TRA_PLL   3
-#define TRA_NUM		4
-
-char trackLegend[TRA_NUM][5] = {"Ind", "+/-","Ser","Pll"};
-char trackLegendLong[TRA_NUM][16] = {"Independent", "+/-","Series","Parallel"};
-
 /* not yet implemented
 struct control {
 } myC; 
 */
-struct settings { // saved in Profile
+struct settings {
 	float   voltage;		// set point
+	float   voltageS;		// set point
 	float   current;		// set point
-	bool		outEn; 			// channel output is enabled
-
-} pSet[NUMCHANNELS] = {{2,  0.5,  false}, {1,  0.6, false}};
-
-struct mSettings { // saved in Profile
-  bool    trackOn;		// group tracking is enabled			 
-  uint8_t trackMode;		// unused - TBD (2 channel version - relays)
-	bool 		trackSa;		// tracking - set current as group
-	bool 		trackSv;		// tracking - set volts as group	
+	float   eTrack;			// reduction ratio for group set by group (SCPI) TRAC:REDU X.X messages
 	short   temperature;	// set point for fan on
-} mSet = {false, TRA_IND,false, false, 28};
-
-	bool		outOn; 			// outputs are on
-	float   eTrack;			// reduction ratio for group set by group (SCPI) TRAC:REDU X.X messages	
-  bool    limitOn; 		// local current limiting 
-  bool 		twoChans;		// two channels found		
-	bool 		WifiConnected;
-	
-struct controls { // one per PSU board - not saved in Profile
-	bool  chFound;			// channel detected
+	bool	outOn; 			// output is on
+	bool    limitOn; 		// local current limiting enabled
 	bool 	limiting;  		// set by control() - MOVE THIS?
-	int 	DPOTsetting, 			// startup setting for MCP
-				DACsetting;  		// current voltage setting (DAC units)	
+	bool    trackOn;		// group tracking is enabled
+	bool    WifiConnected;	// flag set by WiFi (move this?)
+	uint8_t trackMode;		// unused - TBD (2 channel version - relays)
+	bool 	trackSa;		// tracking - set current as group
+	bool 	trackSv;		// tracking - set volts as group
+	uint8_t trackGrp;		// tracking group number
+} pSetA = {2, 7, 0.5, 1, 35,
+		   false, true, false, false, false, 0, false, false, 2};
+		   
+struct controls { // one per PSU board
+	int vSetc, 			// startup setting for MCP
+	vSetcS,  			// SMPS start setting - not used
+	vfSetting;  		// DAC start setting
+	
 	float vSetpointX, 	// final value actually used
-				vSetpointR, 		// remote tracking
-				vSetpointI, 		// current limit
-				vSetpointS,     	// nominal setting 
-				localLimitRatio,
-				vLast,vLastSet, watts;	
+	vSetpointR, 		// remote tracking
+	vSetpointI, 		// current limit
+	vSetpointS,     	// nominal setting 
+	localLimitRatio,
+	vLast,vLastSet, watts;
+	
 	bool iLimit, oldTrack;
 	int8_t limitInd, trackInd; // easy indicators: 0==disabled; 1==enabled; 2==limiting/track-limiting
-} pCont[NUMCHANNELS] = {{true,WSTART, DSTART, 
+} pContA = {WSTART, 0, DSTART, 
 			0,0,0,0,1,0,0,0, 
-			false, false,5,7},
-			{true,WSTART, DSTART, 
-			0,0,0,0,1,0,0,0, 
-			false, false,5,7}};
-			
-#define chanBfound pCont[1].chFound	// master flag for single/dual channel operation
+			false, false,5,7};
 
 // calibration menu
-float calOff_IA = 0.00, // channel A
-	  calOff_VA = 0.0, // setting variables for offset calculation 
-		calOff_IB = 0.0, // channel B
-		calOff_VB = 0.0;
-		
-struct channelDef { // static or set up at detection
-	settings *sp;		//
-	inHAL    *hp;
-	inADC    *ap;
-	controls	 *cp;
-	uint8_t ADCaddr,	// I2C addresses for hardware devices
-					DACaddr,
-					DPOTaddr;
+float calOff_I = 0.01, 
+	  calOff_V = 0.0; // setting variables for offset calculation 
+
+struct channelDef {
+	settings *sp;
+	inHAL   * hp;
+	inADC * ap;
+	uint8_t ads;	// I2C addresses for hardware devices
 	uint8_t potV;
-	uint8_t potS;	
-} chDef[NUMCHANNELS] = { 
-		{&pSet[0], &ADS_HAL, &myADC[0][0], &pCont[0], ADS_ADDR0, 0, 0, DPOT_BASE, 0},
-		{&pSet[1], &ADS_HAL, &myADC[1][0], &pCont[1], ADS_ADDR1, 0, 0, DPOT_BASE, 0}
-	};
+	uint8_t potS;
+	uint8_t  dac;	// 0 if internal DAC used
+} chDef[NUMCHANNELS] = {&pSetA, &ADS_HAL, &myADC[0], ADS_ADDR, DIGI_V, 0, DAC_ADDR};
 
 short  highButton = -1;	// currently selected screen button
 bool fanIsOn; // fan on indicator
+/*
+#define SMPS_STEPS 9
+struct setTable {
+	uint8_t step;		// actual setting
+	float   volts;		// volts out at this step
+	float	stepsVolt;	// number of steps to change OP by 1 volt at this point
+} stepsSMPS[SMPS_STEPS];
+*/
+/****************** end Channel 1 definitions ***************/
+/****************** start Channel 2 definitions ***************/
+/* instrument definitions - slave channel refs */
+
+
+
+/****************** end Channel 2 definitions ***************/
 
 // SCPI identification 
 #define IDN_MANUF "SiliconChip"

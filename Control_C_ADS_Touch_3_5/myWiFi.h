@@ -6,11 +6,9 @@ basic WiFi for all instruments
 #define MYWIFI_H
 
 #include <WiFi.h>
-//#include <WiFiMulti.h>
 #include <WiFiAP.h>
 #include <WiFiClient.h>
 #include <WebServer.h>
-#include <WiFiServer.h>
 #include <ESPmDNS.h>
 void setHostNameIP (void);
 
@@ -32,7 +30,7 @@ bool wifiBegin(){
    bool res;
    //if(WiFi.status() == WL_CONNECTED) // WiFi.begin() should disconnect
 	   
-   WifiConnected = false;
+   pSetA.WifiConnected = false;
    SDEBUG1.println("**** Configuring WiFi *****");
    IamAP = false;
    // try connecting to nominated network
@@ -58,7 +56,7 @@ bool wifiBegin(){
 	  mySubnetMask = WiFi.subnetMask();
 	  MDNS.begin(myID.instName);
 	  setHostNameIP ();
-	  WifiConnected = true;
+	  pSetA.WifiConnected = true;
 	  return true;
    }
    
@@ -86,7 +84,7 @@ bool wifiBegin(){
 	mySubnetMask = WiFi.subnetMask();
 	MDNS.begin(myID.instName);
 	setHostNameIP ();
-	WifiConnected = true;
+	pSetA.WifiConnected = true;
     return true;
   }
   // Failed: Launch ESPnet as AP
@@ -119,7 +117,7 @@ bool wifiBegin(){
 	IamAP = true;
 	MDNS.begin(myID.instName);
 	setHostNameIP ();
-	WifiConnected = true;
+	pSetA.WifiConnected = true;
     return true;
   }
   
@@ -135,7 +133,7 @@ void wifiEnd(bool wifioff = false){
 	Serial.printf("Soft AP disconnect %i\n", ret);
 	ret = WiFi.disconnect(wifioff);
 	Serial.printf("STA disconnect %i\n", ret);
-	WifiConnected = false;
+	pSetA.WifiConnected = false;
 }
 
 // set hostname and IP in string format
