@@ -670,7 +670,7 @@ void printfloatX(void * vp, char* v2, const GFXfont *fp,  uint8_t textSize, shor
 #define MARGIN_E 10
 #define ROUND_E 10
 // minimal reliance on fancy fonts, etc
-#include "platylogo.img"
+#include "platylogo.h"
 void screenError(char * message, uint16_t bgcol, uint16_t onTime, bool logo)
 {
 int i, ycursr = VTOP_E + LINESP_E;
