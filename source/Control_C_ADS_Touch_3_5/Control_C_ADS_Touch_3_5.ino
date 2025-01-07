@@ -186,6 +186,7 @@ void loop() {
      SCPIgrpTrack();  // send out control group updates 
  //Serial.print("5");
      server.handleClient(); // http
+     ElegantOTA.loop(); // OTA updates
      count++;
  //diagPin(LOW);
   
