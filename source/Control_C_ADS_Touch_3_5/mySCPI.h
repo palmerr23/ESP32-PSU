@@ -415,7 +415,7 @@ void SCPItrans(char * response)
 		sendIP[3] = streamIn[currentStreamIn].streamID;
 		//Serial.printf("SCPI UDP OUT [%i]: %s\n", SCPIsource, response); // for now!
 		// not broadcast - point to point response ********* do we ignore all messages outside our track grp, or just broadcast ones??
-		//putUDP(streamIn[currentStreamIn].buf, sendIP, streamIn[currentStreamIn].remotePort, pSet[0].trackGrp, 0);
+		putUDP(streamIn[currentStreamIn].buf, sendIP, streamIn[currentStreamIn].remotePort, pSetA.trackGrp, 0);
 		//streamIn[currentStreamIn].status = SCPIBUF_IDLE;
 		return;
 	}
@@ -520,7 +520,7 @@ scpi_error_t set_voltage(struct scpi_parser_context* context, struct scpi_token*
     scpi_error error;
     error.id = -200;
 	 if( (output_numeric.value >= 0 && output_numeric.value <= VOMAX))
-		error.description = (char *)"Command error; Invalid unit";
+		error.description = "Command error; Invalid unit";
 	else 
 	{
 		sprintf(myError, "Command error; Invalid value %5.2f", output_numeric.value) ;
@@ -534,7 +534,7 @@ scpi_error_t set_voltage(struct scpi_parser_context* context, struct scpi_token*
     return SCPI_SUCCESS;
   }
   scpi_free_tokens(command);
- // Serial.printf("Debug - set volts to %6.3f V\n", vSettingA);
+ // Serial.printf("Debug - set volts to %6.3f V\n", vSetting);
   return SCPI_SUCCESS;
 }
 
@@ -574,7 +574,7 @@ scpi_error_t set_current(struct scpi_parser_context* context, struct scpi_token*
     scpi_error error;
     error.id = -200;
 	if (output_numeric.value >= 0 && output_numeric.value <= IMAX)
-		error.description = (char *)"Command error;Invalid unit";
+		error.description = "Command error;Invalid unit";
 	else 
 	{
 		sprintf(myError, "Command error; Invalid value %5.2f", output_numeric.value) ;
@@ -608,7 +608,7 @@ scpi_error_t set_protect(struct scpi_parser_context* context, struct scpi_token*
   //Serial.printf("SET IPROT: [%s]\n", args->value);
   if (!strncmp(args->value,"ON",2))
   {
-    // chDef[streamIn[currentStreamIn].channel].sp->limitOn = true;  
+     chDef[streamIn[currentStreamIn].channel].sp->limitOn = true;  
 	 //Serial.print("S");
 	 valChanged(VAL_CHGD);
 	 dirtyScreen = true;
@@ -616,7 +616,7 @@ scpi_error_t set_protect(struct scpi_parser_context* context, struct scpi_token*
   else 
     if(!strncmp(args->value,"OFF", 3))
 	{		
-    //  chDef[streamIn[currentStreamIn].channel].sp->limitOn = false;  
+      chDef[streamIn[currentStreamIn].channel].sp->limitOn = false;  
 	  //Serial.print("S");
 	  valChanged(VAL_CHGD); 
 	  dirtyScreen = true;
@@ -655,7 +655,7 @@ scpi_error_t set_track_enable(struct scpi_parser_context* context, struct scpi_t
 
   if (!strncmp(args->value,"ON",2))
   {
-   //  chDef[streamIn[currentStreamIn].channel].sp->trackOn = true;  
+     chDef[streamIn[currentStreamIn].channel].sp->trackOn = true;  
 	//Serial.print("S:TE Y");
 	valChanged(VAL_CHGD); 
 	dirtyScreen = true;
@@ -663,7 +663,7 @@ scpi_error_t set_track_enable(struct scpi_parser_context* context, struct scpi_t
   else 
     if(!strncmp(args->value,"OFF", 3))
 	{		
-     // chDef[streamIn[currentStreamIn].channel].sp->trackOn = false;  
+      chDef[streamIn[currentStreamIn].channel].sp->trackOn = false;  
 	//Serial.print("S:TE N");
 	valChanged(VAL_CHGD);
 	dirtyScreen = true;
@@ -702,7 +702,7 @@ scpi_error_t set_track_v_ena(struct scpi_parser_context* context, struct scpi_to
 
   if (!strncmp(args->value,"ON",2))
   {
-    // chDef[streamIn[currentStreamIn].channel].sp->trackSv = true;  
+     chDef[streamIn[currentStreamIn].channel].sp->trackSv = true;  
 	//Serial.print("S: VE Y");
 	valChanged(VAL_CHGD); 
 	dirtyScreen = true;
@@ -710,7 +710,7 @@ scpi_error_t set_track_v_ena(struct scpi_parser_context* context, struct scpi_to
   else 
     if(!strncmp(args->value,"OFF", 3))
 	{		
-     // chDef[streamIn[currentStreamIn].channel].sp->trackSv = false;  
+      chDef[streamIn[currentStreamIn].channel].sp->trackSv = false;  
 	//Serial.print("S: VE N");
 	valChanged(VAL_CHGD);
 	dirtyScreen = true;
@@ -750,7 +750,7 @@ scpi_error_t set_track_c_ena(struct scpi_parser_context* context, struct scpi_to
 
   if (!strncmp(args->value,"ON",2))
   {
-    // chDef[streamIn[currentStreamIn].channel].sp->trackSa = true;  
+     chDef[streamIn[currentStreamIn].channel].sp->trackSa = true;  
 	//Serial.print("S:CE Y");
 	valChanged(VAL_CHGD); 
 	dirtyScreen = true;
@@ -758,7 +758,7 @@ scpi_error_t set_track_c_ena(struct scpi_parser_context* context, struct scpi_to
   else 
     if(!strncmp(args->value,"OFF", 3))
 	{		
-     // chDef[streamIn[currentStreamIn].channel].sp->trackSa = false;  
+      chDef[streamIn[currentStreamIn].channel].sp->trackSa = false;  
 	//Serial.print("S:CE N");
 	valChanged(VAL_CHGD);
 	dirtyScreen = true;
@@ -804,9 +804,9 @@ scpi_error_t set_track_volts(struct scpi_parser_context* context, struct scpi_to
 	)
   {
     output_value = constrain(output_numeric.value, 0, VOMAX);
-	if(0)//chDef[streamIn[currentStreamIn].channel].sp->trackOn && chDef[streamIn[currentStreamIn].channel].sp->trackSv) // only if tracking and Voltage tracking are both enabled
+	if(chDef[streamIn[currentStreamIn].channel].sp->trackOn && chDef[streamIn[currentStreamIn].channel].sp->trackSv) // only if tracking and Voltage tracking are both enabled
 	{
-		//chDef[streamIn[currentStreamIn].channel].sp->voltage = output_value;
+		chDef[streamIn[currentStreamIn].channel].sp->voltage = output_value;
 		//Serial.printf("S: TV %5.2f\n", output_value);
 		//Serial.printf("S [%i] %f ", streamIn[currentStreamIn].channel, output_value);
 		// also set input (SMPS) voltage
@@ -819,7 +819,7 @@ scpi_error_t set_track_volts(struct scpi_parser_context* context, struct scpi_to
 			// rebroadcast to group
 			sprintf(valBuf,":TRAC:VOLT %3.6f\n",output_value);
 			//Serial.print("#");
-			//SCPIsendGrpMessage(pSet[0].trackGrp, valBuf);
+			SCPIsendGrpMessage(pSetA.trackGrp, valBuf);
 			SCPIheartbeatSent = true;
 			//lastVset = output_value; //prevent rebroadcast to group
 			changedLocal = false;
@@ -831,7 +831,7 @@ scpi_error_t set_track_volts(struct scpi_parser_context* context, struct scpi_to
     scpi_error error;
     error.id = -200;
 	 if( (output_numeric.value >= 0 && output_numeric.value <= VOMAX))
-		error.description = (char *)"Command error; Invalid unit";
+		error.description = "Command error; Invalid unit";
 	else 
 	{
 		sprintf(myError, "Command error; Invalid value %5.2f", output_numeric.value) ;
@@ -845,7 +845,7 @@ scpi_error_t set_track_volts(struct scpi_parser_context* context, struct scpi_to
     return SCPI_SUCCESS;
   }
   scpi_free_tokens(command);
- // Serial.printf("Debug - set volts to %6.3f V\n", vSettingA);
+ // Serial.printf("Debug - set volts to %6.3f V\n", vSetting);
   return SCPI_SUCCESS;
 }
 
@@ -872,9 +872,9 @@ scpi_error_t set_track_current(struct scpi_parser_context* context, struct scpi_
 	(output_numeric.value >= 0 && output_numeric.value <= IMAX))
   {
     ov = constrain(output_numeric.value, 0, 3);
-	if(mSet.trackOn && mSet.trackSa) // only if tracking and current tracking are both enabled
+	if(chDef[streamIn[currentStreamIn].channel].sp->trackOn && chDef[streamIn[currentStreamIn].channel].sp->trackSa) // only if tracking and current tracking are both enabled
 	{
-		//chDef[streamIn[currentStreamIn].channel].sp->current = ov;
+		chDef[streamIn[currentStreamIn].channel].sp->current = ov;
 		//iSetting = output_value;
 		//Serial.printf("S: TC %5.2f\n", ov);
 		valChanged(VAL_CHGD); 
@@ -883,7 +883,7 @@ scpi_error_t set_track_current(struct scpi_parser_context* context, struct scpi_
 		{
 			// rebroadcast to group
 			sprintf(valBuf,":TRAC:CURR %3.6f\n",ov);
-			//SCPIsendGrpMessage(pSet[0].trackGrp, valBuf);
+			SCPIsendGrpMessage(pSetA.trackGrp, valBuf);
 			SCPIheartbeatSent = true;
 			//lastCset = ov;  //prevent rebroadcast to group
 			changedLocal = false;
@@ -895,7 +895,7 @@ scpi_error_t set_track_current(struct scpi_parser_context* context, struct scpi_
     scpi_error error;
     error.id = -200;
 	if (output_numeric.value >= 0 && output_numeric.value <= IMAX)
-		error.description = (char *)"Command error;Invalid unit";
+		error.description = "Command error;Invalid unit";
 	else 
 	{
 		sprintf(myError, "Command error; Invalid value %5.2f", output_numeric.value) ;
@@ -939,7 +939,7 @@ scpi_error_t set_ssid(struct scpi_parser_context* context, struct scpi_token* co
     scpi_error error;
     error.id = -200;
 	 if( (output_numeric.value >= 0 && output_numeric.value <= VOMAX))
-		error.description = (char *)"Command error; Invalid unit";
+		error.description = "Command error; Invalid unit";
 	else 
 	{
 		sprintf(myError, "Command error; Invalid value %5.2f", output_numeric.value) ;
@@ -953,7 +953,7 @@ scpi_error_t set_ssid(struct scpi_parser_context* context, struct scpi_token* co
     return SCPI_SUCCESS;
   }
   scpi_free_tokens(command);
- // Serial.printf("Debug - set volts to %6.3f V\n", vSettingA);
+ // Serial.printf("Debug - set volts to %6.3f V\n", vSetting);
   return SCPI_SUCCESS;
 }
 /*** Set the WiFi PASSphrase*/
@@ -981,7 +981,7 @@ scpi_error_t set_pass(struct scpi_parser_context* context, struct scpi_token* co
     scpi_error error;
     error.id = -200;
 	 if( (output_numeric.value >= 0 && output_numeric.value <= VOMAX))
-		error.description = (char *)"Command error; Invalid unit";
+		error.description = "Command error; Invalid unit";
 	else 
 	{
 		sprintf(myError, "Command error; Invalid value %5.2f", output_numeric.value) ;
@@ -995,7 +995,7 @@ scpi_error_t set_pass(struct scpi_parser_context* context, struct scpi_token* co
     return SCPI_SUCCESS;
   }
   scpi_free_tokens(command);
- // Serial.printf("Debug - set volts to %6.3f V\n", vSettingA);
+ // Serial.printf("Debug - set volts to %6.3f V\n", vSetting);
   return SCPI_SUCCESS;
 }
 /**
@@ -1020,7 +1020,7 @@ scpi_error_t set_track_reduce(struct scpi_parser_context* context, struct scpi_t
 
  // assume command is for me (my group) UDP and serial messages are point to point, UDP messages for other groups are discard/* //chDef[streamIn[currentStreamIn].channel].sp->eTrack != chDef[streamIn[currentStreamIn].channel].sp->trackGrp;
  /*
- if(pSet[0].trackGrp != chDef[streamIn[currentStreamIn].channel].sp->trackGrp)
+ if(pSetA.trackGrp != chDef[streamIn[currentStreamIn].channel].sp->trackGrp)
   {
 	// no error, just meant for another tracking group
 	scpi_free_tokens(command);
@@ -1034,7 +1034,7 @@ scpi_error_t set_track_reduce(struct scpi_parser_context* context, struct scpi_t
   if(ov >= 0 && ov <= 999 + SMALL_DIFF)
   {   // set eTrack for selected channel
 	ov = constrain(ov, 0.0, 1.0);
-	//pSet[0].eTrack = ov;
+	pSetA.eTrack = ov;
     //chDef[streamIn[currentStreamIn].channel].sp->eTrack = ov; // more elegant
 
 	//Serial.print("TRK\n");
@@ -1044,7 +1044,7 @@ scpi_error_t set_track_reduce(struct scpi_parser_context* context, struct scpi_t
 	{
 		// rebroadcast to group
 		sprintf(valBuf,":TRAC:REDU %3.6f\n",ov);
-		//SCPIsendGrpMessage(pSet[0].trackGrp, valBuf);
+		SCPIsendGrpMessage(pSetA.trackGrp, valBuf);
 		SCPIheartbeatSent = true;
 	}
   }
@@ -1052,7 +1052,7 @@ scpi_error_t set_track_reduce(struct scpi_parser_context* context, struct scpi_t
   {
     scpi_error error;
     error.id = -200;	
-	error.description = (char *)"Command error; Invalid unit";
+	error.description = "Command error; Invalid unit";
     sprintf(SCPIoutBuf,"%i,\"%s\"", error.id, error.description);
     SCPItrans(SCPIoutBuf);
     scpi_queue_error(&ctx, error);
@@ -1080,7 +1080,7 @@ scpi_error_t set_track_group(struct scpi_parser_context* context, struct scpi_to
   output_numeric = scpi_parse_numeric(args->value, args->length, 1, 0, MAXTRACKGRP);
   if(output_numeric.value >= 0 && output_numeric.value <= MAXTRACKGRP)
   {    
-   // chDef[streamIn[currentStreamIn].channel].sp->trackGrp = output_numeric.value;
+    chDef[streamIn[currentStreamIn].channel].sp->trackGrp = output_numeric.value;
 	//Serial.print("S");
 	valChanged(VAL_CHGD);
 	dirtyScreen = true;
@@ -1090,7 +1090,7 @@ scpi_error_t set_track_group(struct scpi_parser_context* context, struct scpi_to
     scpi_error error;
     error.id = -200;
 	if (output_numeric.value > 0 && output_numeric.value <= IMAX)
-		error.description = (char *)"Command error;Invalid unit";
+		error.description = "Command error;Invalid unit";
 	else 
 	{
 		sprintf(myError, "Command error; Invalid value %5.2f", output_numeric.value) ;
@@ -1176,7 +1176,7 @@ scpi_error_t set_estop(struct scpi_parser_context* context, struct scpi_token* c
 	if (directCommand)
 	{
 		sprintf(valBuf,":TRAC:ESTO\n");
-		//SCPIsendGrpMessage(pSet[0].trackGrp, valBuf);
+		SCPIsendGrpMessage(pSetA.trackGrp, valBuf);
 		SCPIheartbeatSent = true;
 	}
 
@@ -1215,7 +1215,7 @@ scpi_error_t set_channel(struct scpi_parser_context* context, struct scpi_token*
     {
       scpi_error error;
       error.id = -200;
-      error.description = (char *)"Command error; Invalid channel";
+      error.description = "Command error; Invalid channel";
       error.length = 26;
       sprintf(SCPIoutBuf,"%i,\"%s\"", error.id,error.description);
       SCPItrans(SCPIoutBuf);  
@@ -1300,10 +1300,10 @@ scpi_error_t set_hostName(struct scpi_parser_context* context, struct scpi_token
     scpi_error error;
     error.id = -200;
 	 if( (output_numeric.value >= 0 && output_numeric.value <= VOMAX))
-		error.description = (char *)"Command error; Invalid unit";
+		error.description = "Command error; Invalid unit";
 	else 
 	{
-		sprintf(myError, (char *)"Command error; Invalid value %5.2f", output_numeric.value) ;
+		sprintf(myError, "Command error; Invalid value %5.2f", output_numeric.value) ;
 		error.description = myError;
 	}
     //error.length = 26;
@@ -1314,7 +1314,7 @@ scpi_error_t set_hostName(struct scpi_parser_context* context, struct scpi_token
     return SCPI_SUCCESS;
   }
   scpi_free_tokens(command);
- // Serial.printf("Debug - set volts to %6.3f V\n", vSettingA);
+ // Serial.printf("Debug - set volts to %6.3f V\n", vSetting);
   return SCPI_SUCCESS;
 }
 
@@ -1340,7 +1340,7 @@ scpi_error_t get_set_current(struct scpi_parser_context* context, struct scpi_to
 // return the protection setting 
 scpi_error_t get_set_protect(struct scpi_parser_context* context, struct scpi_token* command)
 { 
-  //sprintf(SCPIoutBuf,"%i\n", chDef[streamIn[currentStreamIn].channel].sp->limitOn);
+  sprintf(SCPIoutBuf,"%i\n", chDef[streamIn[currentStreamIn].channel].sp->limitOn);
   SCPItrans(SCPIoutBuf);
   scpi_free_tokens(command);
   return SCPI_SUCCESS;
@@ -1348,7 +1348,7 @@ scpi_error_t get_set_protect(struct scpi_parser_context* context, struct scpi_to
 // return the output on/off setting
 scpi_error_t get_set_output(struct scpi_parser_context* context, struct scpi_token* command)
 { 
- // sprintf(SCPIoutBuf,"%i\n", chDef[streamIn[currentStreamIn].channel].sp->outOn);
+  sprintf(SCPIoutBuf,"%i\n", chDef[streamIn[currentStreamIn].channel].sp->outOn);
   SCPItrans(SCPIoutBuf);
   scpi_free_tokens(command);
   return SCPI_SUCCESS;
@@ -1364,7 +1364,7 @@ scpi_error_t get_set_channel(struct scpi_parser_context* context, struct scpi_to
 // return the tracking enable setting
 scpi_error_t get_set_track_enable(struct scpi_parser_context* context, struct scpi_token* command)
 { 
- // sprintf(SCPIoutBuf,"%i\n", chDef[streamIn[currentStreamIn].channel].sp->trackOn);
+  sprintf(SCPIoutBuf,"%i\n", chDef[streamIn[currentStreamIn].channel].sp->trackOn);
   SCPItrans(SCPIoutBuf);
   scpi_free_tokens(command);
   return SCPI_SUCCESS;
@@ -1373,7 +1373,7 @@ scpi_error_t get_set_track_enable(struct scpi_parser_context* context, struct sc
 // return the tracking group setting 
 scpi_error_t get_set_track_group(struct scpi_parser_context* context, struct scpi_token* command)
 { 
-  //sprintf(SCPIoutBuf,"%i\n", chDef[streamIn[currentStreamIn].channel].sp->trackGrp);
+  sprintf(SCPIoutBuf,"%i\n", chDef[streamIn[currentStreamIn].channel].sp->trackGrp);
   SCPItrans(SCPIoutBuf);
   scpi_free_tokens(command);
   return SCPI_SUCCESS;
@@ -1382,7 +1382,7 @@ scpi_error_t get_set_track_group(struct scpi_parser_context* context, struct scp
 // tracking: return the group voltage (V) enable setting 
 scpi_error_t get_set_track_v_ena(struct scpi_parser_context* context, struct scpi_token* command)
 { 
- // sprintf(SCPIoutBuf,"%i\n", chDef[streamIn[currentStreamIn].channel].sp->trackSv);
+  sprintf(SCPIoutBuf,"%i\n", chDef[streamIn[currentStreamIn].channel].sp->trackSv);
   SCPItrans(SCPIoutBuf);
   scpi_free_tokens(command);
   return SCPI_SUCCESS;
@@ -1391,7 +1391,7 @@ scpi_error_t get_set_track_v_ena(struct scpi_parser_context* context, struct scp
 // tracking: return the group current (A) enable setting 
 scpi_error_t get_set_track_c_ena(struct scpi_parser_context* context, struct scpi_token* command)
 { 
- // sprintf(SCPIoutBuf,"%i\n", chDef[streamIn[currentStreamIn].channel].sp->trackSa); 
+  sprintf(SCPIoutBuf,"%i\n", chDef[streamIn[currentStreamIn].channel].sp->trackSa); 
   SCPItrans(SCPIoutBuf);
   scpi_free_tokens(command);
   return SCPI_SUCCESS;
@@ -1399,13 +1399,11 @@ scpi_error_t get_set_track_c_ena(struct scpi_parser_context* context, struct scp
 // return the currently tracking value (1.0 for not reducing || disabled 
 scpi_error_t get_track_reduce(struct scpi_parser_context* context, struct scpi_token* command)
 { 
-/*
   float track = 1.0;
   if(chDef[streamIn[currentStreamIn].channel].sp->trackOn && chDef[streamIn[currentStreamIn].channel].sp->eTrack < (1-SMALL_DIFF))
 	  track = chDef[streamIn[currentStreamIn].channel].sp->eTrack;
   sprintf(SCPIoutBuf,"%5.3f\n", track);
   SCPItrans(SCPIoutBuf);
-	*/
   scpi_free_tokens(command);
   return SCPI_SUCCESS;
 }
@@ -1413,7 +1411,7 @@ scpi_error_t get_track_reduce(struct scpi_parser_context* context, struct scpi_t
 // return the "currently limiting" flag
 scpi_error_t get_limiting(struct scpi_parser_context* context, struct scpi_token* command)
 { 
-  //sprintf(SCPIoutBuf,"%i\n", chDef[streamIn[currentStreamIn].channel].sp->limiting);
+  sprintf(SCPIoutBuf,"%i\n", chDef[streamIn[currentStreamIn].channel].sp->limiting);
   SCPItrans(SCPIoutBuf);
   scpi_free_tokens(command);
   return SCPI_SUCCESS;
@@ -1489,14 +1487,14 @@ bool oneSent = false;
 void SCPIgrpTrack(void)
 {
 	float tval;
-	tval = pCont[0].localLimitRatio;
+	tval = pContA.localLimitRatio;
 	// need to send an occasional "Don't reduce" message if tracking is off - as last one prior to tracking OFF may have been a "reduce to XX%" message
-	if (mSet.trackOn || (tval > (1 - SMALL_DIFF))) // not tracking or track reduce value ~ 1.0, then send a "reduce = 1.0" occasionally
+	if (!pSetA.trackOn || (tval > (1 - SMALL_DIFF))) // not tracking or track reduce value ~ 1.0, then send a "reduce = 1.0" occasionally
 	{	  
 		if(++eTcntr == SEND_NOT_TRACK)
 		{		
 			sprintf(valBuf,":TRAC:REDU %3.6f\n", 1.0);
-			//SCPIsendGrpMessage(pSet[0].trackGrp, valBuf);
+			SCPIsendGrpMessage(pSetA.trackGrp, valBuf);
 			//Serial.printf("SCPI: TRAC:REDU %3.2f message\n", 1.0);
 			SCPIheartbeatSent = true;
 			eTcntr = 0;
@@ -1505,32 +1503,32 @@ void SCPIgrpTrack(void)
 	{
 		// send out local current reduction ratio to the group
 		sprintf(valBuf,":TRAC:REDU %3.6f\n",tval);
-		//SCPIsendGrpMessage(pSet[0].trackGrp, valBuf);
+		SCPIsendGrpMessage(pSetA.trackGrp, valBuf);
 		//Serial.printf("SCPI: TRAC:REDU %3.2f message\n", tval);
 		SCPIheartbeatSent = true;
 		eTcntr = 0;
 	}
 	// send out vSet and iSet messages if Tracking and mode enabled and value changed *** LOCALLY ***.
-	if(mSet.trackOn)
+	if(pSetA.trackOn)
 	{
-		if(mSet.trackSv && abs(pSet[0].voltage - lastVset) > SMALL_DIFF && changedLocal)
+		if(pSetA.trackSv && abs(pSetA.voltage - lastVset) > SMALL_DIFF && changedLocal)
 		{
-			sprintf(valBuf,":TRAC:VOLT %3.6f\n",pSet[0].voltage);
-			//SCPIsendGrpMessage(pSet[0].trackGrp, valBuf);
+			sprintf(valBuf,":TRAC:VOLT %3.6f\n",pSetA.voltage);
+			SCPIsendGrpMessage(pSetA.trackGrp, valBuf);
 			//Serial.print("*");
-			//Serial.printf("SCPI: TRAC:VOLT %3.2f message\n", pSet[0].voltage);
+			//Serial.printf("SCPI: TRAC:VOLT %3.2f message\n", pSetA.voltage);
 			SCPIheartbeatSent = true;
-			lastVset = pSet[0].voltage;
+			lastVset = pSetA.voltage;
 			changedLocal = false;
 			eTcntr = 0;
 		}
-		if(mSet.trackSa && abs(pSet[0].current - lastCset) > SMALL_DIFF && changedLocal)
+		if(pSetA.trackSa && abs(pSetA.current - lastCset) > SMALL_DIFF && changedLocal)
 		{
-			sprintf(valBuf,":TRAC:CURR %3.6f\n",pSet[0].current);
-			//SCPIsendGrpMessage(pSet[0].trackGrp, valBuf);
-			//Serial.printf("SCPI: TRAC:CURR %3.2f message\n", pSet[0].current);
+			sprintf(valBuf,":TRAC:CURR %3.6f\n",pSetA.current);
+			SCPIsendGrpMessage(pSetA.trackGrp, valBuf);
+			//Serial.printf("SCPI: TRAC:CURR %3.2f message\n", pSetA.current);
 			SCPIheartbeatSent = true;
-			lastCset = pSet[0].current;
+			lastCset = pSetA.current;
 			changedLocal = false;
 			eTcntr = 0;
 		}		
@@ -1584,7 +1582,7 @@ uint8_t SCPIgroupHeartbeat(void)
 	if(SCPIheartbeatSent == false) // nothing else sent since we last sent a message
 	{
 		sprintf(valBuf,HEART_MSG); // body length needs to be >= "*IDN?" or it will be discarded
-		//SCPIsendGrpMessage(pSet[0].trackGrp, valBuf);
+		SCPIsendGrpMessage(pSetA.trackGrp, valBuf);
 		eTcntr = 0;
 	}
 	

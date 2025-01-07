@@ -31,9 +31,8 @@ struct profile eeProfile;	// read EE into here to check against software version
 #define ADCSIZE (sizeof(myADC))
 #define IDSIZE (sizeof(myID))
 #define SCALSIZE (sizeof(sc))
-#define PSETSIZE (sizeof(pSet))
-#define MSETSIZE (sizeof(mSet))
-#define EESIZE (MPSIZE + ADSSIZE + ADCSIZE + IDSIZE +  SCALSIZE + MSETSIZE + PSETSIZE)
+#define SETSIZE (sizeof(pSetA))
+#define EESIZE (MPSIZE + ADSSIZE + ADCSIZE + IDSIZE +  SCALSIZE + SETSIZE)
 
 bool setupEE() {
   int addr = 0, rb;
@@ -99,15 +98,9 @@ int writeEE(void){
 	//Serial.printf("  Screen cal [%i]\n", sizeof(sc));	
 	
 	addr += SCALSIZE;
-	bytesWrit += EEPROM.writeBytes(addr, (void *)&pSet, sizeof(pSet));
-	//Serial.printf("  Settings [%i]\n", sizeof(pSet));	
-	//Serial.printf("Total bytes to be written = %i\n",addr + sizeof(pSet) );
-  
-	addr += PSETSIZE;
-	bytesWrit += EEPROM.writeBytes(addr, (void *)&mSet, sizeof(mSet));
-	//Serial.printf("  Settings [%i]\n", sizeof(pSet));	
-	//Serial.printf("Total bytes to be written = %i\n",addr + sizeof(pSet) );
-	
+	bytesWrit += EEPROM.writeBytes(addr, (void *)&pSetA, sizeof(pSetA));
+	//Serial.printf("  Settings [%i]\n", sizeof(pSetA));	
+	//Serial.printf("Total bytes to be written = %i\n",addr + sizeof(pSetA) );
 	
 	// try to avoid watchdog timer kernel panic and reboot - none of these seem to work!
 	yield(); 
@@ -141,7 +134,7 @@ int readEE(void){
 	
 	addr += ADSSIZE;
 	bytesRead += EEPROM.readBytes(addr, (void *)&myADC, sizeof(myADC));
-	//Serial.printf("ADC[3] name = [%s]\n", myADC[0][3].iname);
+	//Serial.printf("ADC[3] name = [%s]\n", myADC[3].iname);
 	
 	addr += ADCSIZE;
 	bytesRead += EEPROM.readBytes(addr, (void *)&myID, sizeof(myID));
@@ -151,13 +144,10 @@ int readEE(void){
 	//Serial.printf("Screen Cal Hmin = %i\n",sc.thmin);
 	
 	addr +=  SCALSIZE;
-	bytesRead += EEPROM.readBytes(addr, (void *)&pSet, sizeof(pSet));  
-	//Serial.printf("Set voltage = %5.2f\n",pSet[0].voltage);
-	addr +=  PSETSIZE;
-	bytesRead += EEPROM.readBytes(addr, (void *)&mSet, sizeof(mSet));  
-	//Serial.printf("Set voltage = %5.2f\n",pSet[0].voltage);
+	bytesRead += EEPROM.readBytes(addr, (void *)&pSetA, sizeof(pSetA));  
+	//Serial.printf("Set voltage = %5.2f\n",pSetA.voltage);
 	
-	//Serial.printf("Total bytes to be read = %i\n",addr + sizeof(pSet) );
+	//Serial.printf("Total bytes to be read = %i\n",addr + sizeof(pSetA) );
 
 	return bytesRead;
 }
@@ -324,7 +314,7 @@ bool testEEprofile(){
 	Serial.printf("  Screen Cal Hmin = %i\n",testSC.thmin);
 	
 	Serial.printf("Settings: Read %i of %i\n", set, sizeof(testSet));
-	if (memcmp(&testSet, &pSet, sizeof(testSet)) != 0)
+	if (memcmp(&testSet, &pSetA, sizeof(testSet)) != 0)
 		Serial.println("  Broken Settings");
 	else
 		Serial.println("  Settings OK");

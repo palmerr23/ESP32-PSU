@@ -30,18 +30,18 @@ void getReadings(void){
    // duplicates ADS1115 code, but missing from native ADC handlers
    // convert reading counts to volts
    portENTER_CRITICAL(&mux); // turn off interrupts while getting the ADS converted values
-	   myADC[0][VOUT].curVolts = convertHAL(adsReadings[VOUT], &ADS_HAL); 
-	   myADC[0][VIN].curVolts  = convertHAL(adsReadings[VIN],  &ADS_HAL); 
-	   myADC[0][IOUT].curVolts = convertHAL(adsReadings[IOUT], &ADS_HAL); 
-	   myADC[0][TEMP].curVolts = convertHAL(adsReadings[TEMP], &ADS_HAL); 
+	   myADC[VOUT].curVolts = convertHAL(adsReadings[VOUT], &ADS_HAL); 
+	   myADC[VIN].curVolts  = convertHAL(adsReadings[VIN],  &ADS_HAL); 
+	   myADC[IOUT].curVolts = convertHAL(adsReadings[IOUT], &ADS_HAL); 
+	   myADC[TEMP].curVolts = convertHAL(adsReadings[TEMP], &ADS_HAL); 
    portEXIT_CRITICAL(&mux);
    // convert volts read to real world values
   //convertHAL(adsReadings[adsMux], &ADS_HAL); 
   //Serial.print("*");
-   myADC[0][VOUT].curVal = myADCcalls[VOUT].convert(myADC[0][VOUT].curVolts, &myADC[0][VOUT]);
-   myADC[0][VIN].curVal  = myADCcalls[VIN].convert(myADC[0][VIN].curVolts,   &myADC[0][VIN]);
-   myADC[0][IOUT].curVal = myADCcalls[IOUT].convert(myADC[0][IOUT].curVolts, &myADC[0][IOUT]);
-   myADC[0][TEMP].curVal = myADCcalls[TEMP].convert(myADC[0][TEMP].curVolts, &myADC[0][TEMP]);
+   myADC[VOUT].curVal = myADCcalls[VOUT].convert(myADC[VOUT].curVolts, &myADC[VOUT]);
+   myADC[VIN].curVal  = myADCcalls[VIN].convert(myADC[VIN].curVolts,   &myADC[VIN]);
+   myADC[IOUT].curVal = myADCcalls[IOUT].convert(myADC[IOUT].curVolts, &myADC[IOUT]);
+   myADC[TEMP].curVal = myADCcalls[TEMP].convert(myADC[TEMP].curVolts, &myADC[TEMP]);
 }
 bool shutDown = false;
 void errorI(bool shutOff, bool powerDown, float reading, char * errMsg)
@@ -59,7 +59,7 @@ void errorI(bool shutOff, bool powerDown, float reading, char * errMsg)
 }
 
 // coarse and fine control for main output with limiting and tracking
-// the actual setting (DPOTsetting) may differ from the desired voltage setting (pSet[0].voltage)
+// the actual setting (vSetc) may differ from the desired voltage setting (pSetA.voltage)
 //   as a result of external tracking and iLimit
 // SMPS tracks the actual output voltage + VDROPOUT 
 //   but does not go the minimum (start) voltage (VSTART_S)
@@ -68,19 +68,17 @@ void errorI(bool shutOff, bool powerDown, float reading, char * errMsg)
 // ******** move myACD to pointer referenced argument for 2CH
 
 /*
-int DPOTsetting = WSTART, vSetcS = WSTART_S ,DACsetting = DSTART; // values are settings, not Volts
+int vSetc = WSTART, vSetcS = WSTART_S ,vfSetting = DSTART; // values are settings, not Volts
 float vSetpointX, vSetpointR, vSetpointI, vSetpointS, localLimitRatio;
 float vLast = 0, vLastSet = 0;
 bool iLimit = false;
 bool oldTrack = false;
 */
 char estop[] = ":TRAC:ESTO";
-float control(int chan)
+float control(settings * sp, controls * cp)
 {
-	settings * sp = &pSet[chan];
-	controls * cp = &pCont[chan];
   float vSetpoint, iSetpoint, iTrack;
-  bool limiting, trackEn;
+  bool limitOn, trackOn;
   float vRead, vReadS, iRead, tRead, vGap;  
   int jump;
   bool rLimit;
@@ -89,68 +87,71 @@ float control(int chan)
  
    vSetpoint = sp->voltage; // update settings 
    iSetpoint = sp->current ;
-   iTrack = eTrack;
-   limiting = cp->limiting;
-   trackEn = mSet.trackOn;
+   iTrack = sp->eTrack;
+   limitOn = sp->limitOn;
+   trackOn = sp->trackOn;
    // sp->voltageS  = vSetpoint + VDROPOUT; // no loger used
    //************ these need to be extracted to a pointer ******************
-   vRead  = myADC[0][VOUT].curVal; // for convenience
-   vReadS = myADC[0][VIN].curVal;
-   iRead  = myADC[0][IOUT].curVal;
-   tRead  = myADC[0][TEMP].curVal; 
+   vRead  = myADC[VOUT].curVal; // for convenience
+   vReadS = myADC[VIN].curVal;
+   iRead  = myADC[IOUT].curVal;
+   tRead  = myADC[TEMP].curVal; 
    cp->watts = vRead * iRead;
    vGap = vSetpoint - vRead;
  //  Serial.print("CONT");
 #ifdef C_DEBUG   
   //  Serial.printf("%i",loopcntr);
 	//Serial.printf(" Vin count = %i", adsReadings[VIN]);
-	Serial.printf("Lim %s, Trac %s ", (limiting)? "T" : "F", (trackEn)? "T" : "F");
-	if(trackEn) Serial.printf("(%3.1f%)", iTrack*100);
+	Serial.printf("Lim %s, Trac %s ", (limitOn)? "T" : "F", (trackOn)? "T" : "F");
+	if(trackOn) Serial.printf("(%3.1f%)", iTrack*100);
    // Serial.print(": vSet = "); Serial.print(vSetpoint);
-  if (limiting)  Serial.printf(", Iset = %5.3f",  pSet[0].current);
+  if (limitOn)  Serial.printf(", Iset = %5.3f",  pSetA.current);
     Serial.printf(", Iread = %5.3f", iRead);
-	Serial.printf(", IreadV = %5.3f", myADC[0][IOUT].curVolts);
+	Serial.printf(", IreadV = %5.3f", myADC[IOUT].curVolts);
 	//Serial.printf(", Icount = %i", adsReadings[IOUT]);  
    // out of bounds checking: lowError; hiError;
 #endif
    if(!startUp) // don't process these immediately after turn on
    {
-	   //Serial.printf("\nCE: %5.3f %5.3f\n",iRead , myADC[0][IOUT].hiError);
+	   //Serial.printf("\nCE: %5.3f %5.3f\n",iRead , myADC[IOUT].hiError);
 	   // serious error conditions - will turn off output and reduce voltage values to safe
 	   // will also turn off outputs in the group, if tracking 
-	   if (iRead > myADC[0][IOUT].hiError) // Short circuit protection
+	   if (iRead > myADC[IOUT].hiError) // Short circuit protection
 	   {
 		 //Serial.print("Short circuit\n");
-	   //	 if(sp->trackEn) SCPIsendGrpMessage(sp->trackGrp, estop);
-		 errorI(true, false, iRead, (char *)"Short circuit \nprotection"); 
+	   	 if(sp->trackOn)
+			SCPIsendGrpMessage(sp->trackGrp, estop);
+		 errorI(true, false, iRead, "Short circuit \nprotection"); 
 	   }
 	   
-	   if (vRead > myADC[0][VOUT].hiError) // Output overvoltage
+	   if (vRead > myADC[VOUT].hiError) // Output overvoltage
 	   {
-		 //Serial.printf("Out over error %5.3f [limit  %5.3f]\n",  vRead, myADC[0][VOUT].hiError);
-		 //if(mSet.trackOn)			SCPIsendGrpMessage(sp->trackGrp, estop);
-		 errorI(true, true, vRead, (char *)"Output overvoltage"); 
+		 //Serial.printf("Out over error %5.3f [limit  %5.3f]\n",  vRead, myADC[VOUT].hiError);
+		 if(sp->trackOn)
+			SCPIsendGrpMessage(sp->trackGrp, estop);
+		 errorI(true, true, vRead, "Output overvoltage"); 
 	   }
 	   
-	   if (vReadS > myADC[0][VIN].hiError) // Input overvoltage
+	   if (vReadS > myADC[VIN].hiError) // Input overvoltage
 	   {
-		 //if(mSet.trackOn)			SCPIsendGrpMessage(sp->trackGrp, estop);
-		 errorI(true, true, vReadS, (char *)"Input overvoltage "); 
+		 if(sp->trackOn)
+			SCPIsendGrpMessage(sp->trackGrp, estop);
+		 errorI(true, true, vReadS, "Input overvoltage "); 
 	   }
 		 
-	   if (tRead > myADC[0][TEMP].hiError)
+	   if (tRead > myADC[TEMP].hiError)
 	   {	
-	    // if(mSet.trackOn) // heatsink over temperature
-			//SCPIsendGrpMessage(sp->trackGrp, estop);
-		 errorI(true, true, tRead, (char *)"Over temperature");  
+	     if(sp->trackOn) // heatsink over temperature
+			SCPIsendGrpMessage(sp->trackGrp, estop);
+		 errorI(true, true, tRead, "Over temperature");  
 	   }	  
    }
    
-   if (shutDown || (!outOn) || (!pSet[0].outEn)) // set output voltage to zero if E-stop or, output is off (enable SoftStart)
+   if (shutDown || (!sp->outOn)) // set output voltage to zero if E-stop or, output is off (enable SoftStart)
 	 vSetpoint = 0.0; 
  
    // fan control
-   fanOn(tRead >= mSet.temperature); // needs hysteresis (fan hunts around)
+   fanOn(tRead >= pSetA.temperature); // needs hysteresis (fan hunts around)
   
     // control 	
 	if (abs(cp->vLastSet - vSetpoint) > 0.05) // reset limiting when setting changes significantly - might not be needed???
@@ -163,17 +164,17 @@ float control(int chan)
 	}
 	
     // local iLimit
-	cp->limitInd = (limiting) ? IND_EN : IND_OFFC; //  indicator (active limiting set below) 0==disabled; 1==enabled; 2 == limiting
+	cp->limitInd = (limitOn) ? IND_EN : IND_OFFC; //  indicator (active limiting set below) 0==disabled; 1==enabled; 2 == limiting
 	//Serial.print(" L");
-	float iDiff = iRead -  sp->current;
+	float iDiff = iRead -  pSetA.current;
 	if(abs(iDiff) > I_HYST) // don't change limiting state if only a small error
 	{
-		if ((iRead >  sp->current || cp->vSetpointI < vSetpoint) && limiting) // start or stop limiting 
+		if ((iRead >  pSetA.current || cp->vSetpointI < vSetpoint) && limitOn) // start or stop limiting 
 		{ 
 		  // track against last used V setting, rather than desired value; wrong for first iteration of a new setting
-		 // cp->vSetpointI = vRead * sp->current / iRead ;    //  linear V-I approximation is a little too aggressive
-		  cp->vSetpointI = vRead * (1 -  DAMP_ILIMIT *  (iRead - sp->current)/ iRead) ;    // lightly damped linear V-I approximation 
-		  cp->localLimitRatio = cp->vSetpointI / sp->voltage;
+		 // cp->vSetpointI = vRead * pSetA.current / iRead ;    //  linear V-I approximation is a little too aggressive
+		  cp->vSetpointI = vRead * (1 -  DAMP_ILIMIT *  (iRead - pSetA.current)/ iRead) ;    // lightly damped linear V-I approximation 
+		  cp->localLimitRatio = cp->vSetpointI / pSetA.voltage;
 		  cp->iLimit = true; // telltale for display
 		  cp->limitInd = IND_ACT;
 		 //Serial.print("+");
@@ -186,9 +187,9 @@ float control(int chan)
 		}
 	}
 	
-	dirtyScreen =  dirtyScreen || (limiting != cp->iLimit); // cause a screen redraw if changed
-	limiting = cp->iLimit;
-	if (limiting) // button highlights follow limiting
+	dirtyScreen =  dirtyScreen || (pSetA.limiting != cp->iLimit); // cause a screen redraw if changed
+	pSetA.limiting = cp->iLimit;
+	if (limitOn) // button highlights follow limiting
 	{
 		if (cp->iLimit)
 			but[LBUT].selColour = but[LBUT].unselColour = ITRIG;
@@ -202,8 +203,8 @@ float control(int chan)
 	}
 	
     //  ******************************* TEST remote tracking
-	cp->trackInd = (trackEn)? 1 : 0; // indicator (as for limitInd)
-    if (trackEn && (iTrack <  (1.0 - SMALL_DIFF)))  { // iTrack always <= 1.0
+	cp->trackInd = (trackOn)? 1 : 0; // indicator (as for limitInd)
+    if (trackOn && (iTrack <  (1.0 - SMALL_DIFF)))  { // iTrack always <= 1.0
        cp->vSetpointR = vSetpoint * iTrack; // scale to remote tracking request
        rLimit = true;
 	   cp->trackInd = 2;
@@ -217,7 +218,7 @@ float control(int chan)
 	}
 	dirtyScreen |= cp->oldTrack != rLimit;
 	cp->oldTrack = rLimit;
-	if (trackEn) // button highlights follow tracking
+	if (trackOn) // button highlights follow tracking
 	{
 		if (rLimit)
 			but[TBUT].selColour = but[TBUT].unselColour = ITRIG;
@@ -253,27 +254,27 @@ float control(int chan)
 	// change in coarse voltage required = current voltage offset on fine control + actual gap
 	float vDiff;
 	//vDiff= vGap;
-	vDiff = vGap + ((float)cp->DACsetting - DSTART)/F_STEPS_VOLT;	
+	vDiff = vGap + ((float)cp->vfSetting - DSTART)/F_STEPS_VOLT;	
     jump = vDiff * potV.polarity * STEPS_VOLT;  // setting change
     if (abs(jump) > HYSTERESIS) 
     {
 	  if (abs(jump) > BIGJUMP)
 		jump *= DAMP_VOLT; // for big jumps, be conservative to avoid overshoot
-      cp->DPOTsetting += jump;
+      cp->vSetc += jump;
       // there's something wrong if we need to constrain the setting - cause an error?
-      cp->DPOTsetting = constrain(cp->DPOTsetting, 0, MCPMAXVAL);
-      MCP45writeW(cp->DPOTsetting, DPOT_BASE);
-      cp->DACsetting = DSTART; // reset fine to midpoint with every coarse step change
+      cp->vSetc = constrain(cp->vSetc, 0, MCPMAXVAL);
+      MCP45writeW(cp->vSetc, DIGI_V);
+      cp->vfSetting = DSTART; // reset fine to midpoint with every coarse step change
       fjump = 0; // for debug only
     }
     else  // FINE control (DAC)
     {
       fjump = vGap * FPOL * F_STEPS_VOLT;
       if (abs(fjump) > FHYSTERESIS)
-        cp->DACsetting += fjump;
-      cp->DACsetting = constrain(cp->DACsetting, 0, DAC_MASK);   
+        cp->vfSetting += fjump;
+      cp->vfSetting = constrain(cp->vfSetting, 0, DAC_MASK);   
     }
-      dac.setVoltage(cp->DACsetting, false);// always update fine control
+      dac.setVoltage(cp->vfSetting, false);// always update fine control
 #ifdef C_DEBUG   
           
 		Serial.print(": vSetI = ");
@@ -286,21 +287,21 @@ float control(int chan)
         Serial.printf("%4.2f mV",vGap*1000);
 
         Serial.print(", Set = ");
-        Serial.print(cp->DPOTsetting);
+        Serial.print(cp->vSetc);
         Serial.print(", jump = ");
         Serial.print(jump);
         //Serial.print(", fJump = ");
         //Serial.print(fjump);
         Serial.print(", FSet = ");
-        Serial.print(cp->DACsetting);
+        Serial.print(cp->vfSetting);
  // Serial.print("vX = "); Serial.print(vX);
  // Serial.print(", aR = "); Serial.print(analogRead(A0));Serial.print(",  ");
-  //Serial.print(myADC[0][VOUT].iname); Serial.print("  = "); Serial.print( myADC[0][VOUT].curVal);  Serial.print(myADC[0][VOUT].units); Serial.print(", "); 
-  //Serial.print(myADC[0][VIN ].iname); Serial.print(" = ");  Serial.print( myADC[0][VIN].curVal);   Serial.print(myADC[0][VIN].units);  Serial.print(" \n"); 
-  //Serial.print(myADC[0][IOUT].iname); Serial.print(" = ");  Serial.print(myADC[0][IOUT].curVal);   Serial.print(myADC[0][IOUT].units); Serial.print(", "); 
-  //Serial.print(myADC[0][TEMP].iname); Serial.print(" = ");  Serial.print(myADC[0][TEMP].curVal);   Serial.println(myADC[0][TEMP].units);
+  //Serial.print(myADC[VOUT].iname); Serial.print("  = "); Serial.print( myADC[VOUT].curVal);  Serial.print(myADC[VOUT].units); Serial.print(", "); 
+  //Serial.print(myADC[VIN ].iname); Serial.print(" = ");  Serial.print( myADC[VIN].curVal);   Serial.print(myADC[VIN].units);  Serial.print(" \n"); 
+  //Serial.print(myADC[IOUT].iname); Serial.print(" = ");  Serial.print(myADC[IOUT].curVal);   Serial.print(myADC[IOUT].units); Serial.print(", "); 
+  //Serial.print(myADC[TEMP].iname); Serial.print(" = ");  Serial.print(myADC[TEMP].curVal);   Serial.println(myADC[TEMP].units);
 #endif
-  cp->vLast = cp->vSetpointX; // retain last actual set point 
+    cp->vLast = cp->vSetpointX; // retain last actual set point 
 	cp->vLastSet = vSetpoint; // retain last set point call argument
 
 #ifdef C_DEBUG   
@@ -315,13 +316,11 @@ float control(int chan)
    // return main output voltage - why????
   
    return vSetpoint;
-} 
-/**************************** end control **********************/
+}
 
 void control_setup(void)
 {
-  outOn = false;  // ensure output is off 
-	
+  pSetA.outOn = false;  // ensure output is off 
   pinMode(SW_ON, OUTPUT);
   digitalWrite(SW_ON, LOW); // OFF to start,  always in Output mode after this to drive LED, except when reading switch
   
@@ -335,7 +334,7 @@ void control_setup(void)
   //float volts, realWorld;
   
   // ********** Digipot  & DAC***********
-  MCP45begin(WSTART, DPOT_BASE); 
+  MCP45begin(WSTART, DIGI_V); 
 
   dac.begin(0x60);
   dac.setVoltage(DAC_MASK / 2, false);
@@ -355,7 +354,7 @@ void control_setup(void)
    // zero the output current reading
   delay(10);
   int iZero = ads.readADC_SingleEnded(IOUT);
- // myADC[0][IOUT].minVolts =  convertHAL(iZero, &ADS_HAL); 
+ // myADC[IOUT].minVolts =  convertHAL(iZero, &ADS_HAL); 
   
   // start the regular conversion process
   attachInterrupt(digitalPinToInterrupt(ADSRDY), ads_ISR, FALLING);
@@ -384,7 +383,7 @@ void processOnOffSw(void)
 	onVal = digitalRead(SW_ON);
 	offVal = digitalRead(SW_OFF);	
 	pinMode(SW_ON, OUTPUT);
-	digitalWrite(SW_ON, (pSet[0].outEn)? HIGH : LOW); // re-assert LED status using first channel - will be the same for all channels
+	digitalWrite(SW_ON, (pSetA.outOn)? HIGH : LOW); // re-assert LED status using first channel - will be the same for all channels
 	
 	//debounce: must have same state for DEBOUNCE_OO cycles
 	if(onVal == onSwitch && offVal == offSwitch)
@@ -399,11 +398,11 @@ void processOnOffSw(void)
 	
 	if (oo_samestate >= DEBOUNCE_OO)
 	{
-		if (onVal == HIGH && !pSet[0].outEn) // switch on, if not already on
+		if (onVal == HIGH && !pSetA.outOn) // switch on, if not already on
 		{
 			onOff(-1, true);
 		}
-		if (offVal == HIGH && pSet[0].outEn) // switch off
+		if (offVal == HIGH && pSetA.outOn) // switch off
 		{
 			onOff(-1, false);
 		}	
@@ -427,7 +426,7 @@ void onOff(int8_t channel, bool status)
 	}
 		for (i = j; i < k; i++)
 		{
-			chDef[i].sp->outEn  = status;
+			chDef[i].sp->outOn  = status;
 			//Serial.printf("Changing On/Off [ch %i] to %i [pin %i]\n", i, status, chanPins[i].onPin);
 			// physical control 
 			if(status) 		// ON
@@ -449,10 +448,10 @@ void onOff(int8_t channel, bool status)
 // display counts and converted values
 void dispConv(void)
 {
-	Serial.printf("Vin  [%i] = %5.2f [%i counts = %5.2fV]\n", VIN,    myADC[0][VIN].curVal,  adsReadings[VIN],  myADC[0][VIN].curVolts );
-	Serial.printf("Vout [%i] = %5.2f [%i counts = %5.2fV]\n", VOUT,   myADC[0][VOUT].curVal, adsReadings[VOUT], myADC[0][VOUT].curVolts );
-	Serial.printf("Iout [%i] = %5.2f [%i counts = %5.2fV]\n", IOUT,   myADC[0][IOUT].curVal, adsReadings[IOUT], myADC[0][IOUT].curVolts );
-	Serial.printf("Temp [%i] = %5.2f [%i counts = %5.2fV]\n\n", TEMP, myADC[0][TEMP].curVal, adsReadings[TEMP], myADC[0][TEMP].curVolts );
+	Serial.printf("Vin  [%i] = %5.2f [%i counts = %5.2fV]\n", VIN,    myADC[VIN].curVal,  adsReadings[VIN],  myADC[VIN].curVolts );
+	Serial.printf("Vout [%i] = %5.2f [%i counts = %5.2fV]\n", VOUT,   myADC[VOUT].curVal, adsReadings[VOUT], myADC[VOUT].curVolts );
+	Serial.printf("Iout [%i] = %5.2f [%i counts = %5.2fV]\n", IOUT,   myADC[IOUT].curVal, adsReadings[IOUT], myADC[IOUT].curVolts );
+	Serial.printf("Temp [%i] = %5.2f [%i counts = %5.2fV]\n\n", TEMP, myADC[TEMP].curVal, adsReadings[TEMP], myADC[TEMP].curVolts );
 	
 }
 /* NO LONGER USED
@@ -474,7 +473,7 @@ void calSMPS(void)
 			adsProcess();
 		getReadings();   
 		stepsSMPS[i].step = j;
-		stepsSMPS[i].volts = myADC[0][VIN].curVal;
+		stepsSMPS[i].volts = myADC[VIN].curVal;
 		j += (MCPMAXVAL + 1) / (SMPS_STEPS - 1);
 		j = constrain(j, 0, MCPMAXVAL);
 		//Serial.print("*");

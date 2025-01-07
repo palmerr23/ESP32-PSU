@@ -10,8 +10,8 @@ void updateVal(short highButton, short butDigit);
 
 int toggleLimit(int x)
 {
-	//pSet[0].limitOn  = !pSet[0].limitOn;
-	//Serial.printf("[L %i] ",pSet[0].limitOn);
+	pSetA.limitOn  = !pSetA.limitOn;
+	//Serial.printf("[L %i] ",pSetA.limitOn);
 			  //	Serial.print("#");
 	valChanged(VAL_CHGD) ;
 	return CALL_NOEX;
@@ -19,39 +19,39 @@ int toggleLimit(int x)
 int toggleTrack(int x)
 {
 	char valbuf[32];
-	mSet.trackOn  = !mSet.trackOn;
-	//Serial.printf("[T %i] ",mSet.trackOn);
+	pSetA.trackOn  = !pSetA.trackOn;
+	//Serial.printf("[T %i] ",pSetA.trackOn);
 		//	  	Serial.print("$G");
 	valChanged(VAL_CHGD);
 	// need to send an "start/end tracking reductions from me" message
 	// also don't update any V/I changes since we went off tracking
-	if (mSet.trackOn) 
+	if (pSetA.trackOn) 
 	{
-		sprintf(valBuf,":TRAC:REDU %3.6f\n",eTrack);
-		//SCPIsendGrpMessage(pSet[0].trackGrp, valBuf);
+		sprintf(valBuf,":TRAC:REDU %3.6f\n",pSetA.eTrack);
+		SCPIsendGrpMessage(pSetA.trackGrp, valBuf);
 		SCPIheartbeatSent = true;
 		changedLocal = false;
 	}
 	else 
 	{
 		sprintf(valBuf,":TRAC:REDU %3.6f\n",1.0);		
-		//SCPIsendGrpMessage(pSet[0].trackGrp, valBuf);
+		SCPIsendGrpMessage(pSetA.trackGrp, valBuf);
 		SCPIheartbeatSent = true;
 	}	
 	return CALL_NOEX;
 }
 int toggleTrackVolts(int x)
 {
-	//mSet.trackSv  = !mSet.trackSv;
-	//Serial.printf("[T %i] ",mSet.trackSv);
+	pSetA.trackSv  = !pSetA.trackSv;
+	//Serial.printf("[T %i] ",pSetA.trackSv);
 			  	//Serial.print("$V");
 	valChanged(VAL_CHGD) ;
 	return CALL_NOEX;
 }
 int toggleTrackAmps(int x)
 {
-	//mSet.trackSa  = !mSet.trackSa;
-	//Serial.printf("[T %i] ",mSet.trackSa);
+	pSetA.trackSa  = !pSetA.trackSa;
+	//Serial.printf("[T %i] ",pSetA.trackSa);
 			  	//Serial.print("$A");
 	valChanged(VAL_CHGD) ;
 	return CALL_NOEX;
@@ -89,7 +89,7 @@ void processTouchSwEnc()
   newPosition = enc.getPosition(); // encoder change?
     //   Serial.print("a");
   if (ts.touched())       // keep checking until released - then use value.
-    { //Serial.print("TS_T");
+    { //Serial.print("b");
       p = ts.getPoint(); 
       wastouched = true;    
     } else 
@@ -101,7 +101,7 @@ void processTouchSwEnc()
 			//Serial.print("1");
 			blockT = blockTouched(p); 
 			//Serial.print("2");
-			//Serial.printf("%i <%s> [%i] (%i, %i) [%i, %i] \n",blockT, (blockT >=0) ? but[blockT].text : "#", currentMenu, p.x, p.y, pxh(p.x), pxv(p.y));
+			// Serial.printf("%i [%i] (%i, %i) [%i, %i]\n",blockT, currentMenu, p.x, p.y, pxh(p.x), pxv(p.y));
 			// keep last touched block until another legal block is touched - ignored for OSK and ScreenCal
 			if (blockT >= 0 && !oskActive()) // ignore touches outside buttons
 			{	
@@ -255,21 +255,19 @@ int blockTouched(TS_Point p)
 	uint8_t xbut, ybut;
     // which button has been pressed in the current menu?
     for (int i = 0; i< NUMBUTS; i++)
-    { 
-		  xbut = (((but[i].siz & 0x0f) + 1) * BUTSIZ)/2;
-	    ybut = ((((but[i].siz & 0xf0) >> 4) + 1) * BUTSIZ)/2;
-			//if((i >= 0 && i <= 6)) Serial.printf("B%i <%s>: x %i, w %i, y %i, h %i\n", i, but[i].text, but[i].xpos, xbut, but[i].ypos, ybut);
-      if (	but[i].menu == currentMenu 
+    { //tb[i] = {but[i].xpos, 320, but[i].ypos, but[i].ypos + BUTSIZ }
+	  xbut = (but[i].siz & 0x02) ? BUTSIZ : BUTSIZ/2; // half size buttons
+	  ybut = (but[i].siz & 0x01) ? BUTSIZ : BUTSIZ/2;
+      if (but[i].menu == currentMenu 
             && pxh(p.x) >= but[i].xpos && pxh(p.x) <= (but[i].xpos + xbut) 
             && pxv(p.y) >= but[i].ypos && pxv(p.y) <= (but[i].ypos + ybut)
-						&& ((but[i].enabledIf == NULL) || *but[i].enabledIf)
           )
-      {           
-      	/*  Serial.printf("CM = %i, Touched (%i,%i) [%i, %i] <",currentMenu, p.x, p.y, pxh(p.x),pxv(p.y));
+      {      /*     
+        Serial.printf("CM = %i, Touched (%i,%i) [%i, %i]",currentMenu, p.x, p.y, pxh(p.x),pxv(p.y));
         Serial.print(but[i].text);  
-        Serial.print(">, Highlight ");
+        Serial.print(", Highlight ");
         Serial.println(highButton);
-	*/
+		*/
         // change menu if required
         if (currentMenu != but[i].nextMenu)
 		{

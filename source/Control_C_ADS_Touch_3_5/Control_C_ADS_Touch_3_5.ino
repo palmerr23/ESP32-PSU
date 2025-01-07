@@ -18,14 +18,14 @@
 //#define C_DEBUG // slow down control execution and enable serial diagnostics, for testing
 bool startUp = true;
 //bool numtest = false;
-#include <myMCP45.h>  
+#include "myMCP45.h"
 #include "myInst.h"
 #include "myPSU.h"
 #include "myHelpers.h"
 #include "myScreenDefs.h"
 #include "mySwitches.h"
-#include <myADS1115.h>
-#include <ADS1115bits.h>    
+#include "myADS1115.h"
+#include "ADS1115bits.h"
 #include "myPOST.h"
 
 //#define SPLASH // turn on for production

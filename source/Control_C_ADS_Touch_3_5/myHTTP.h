@@ -84,9 +84,9 @@ tableH[TAB_ROWS][TAB_COLS] = {
 	{{'x', 0, "Track"},{'r', 4, "Tracking Group"},{'r', 3, "Remote"}}
 };
 
-#define LXIND pCont[0].limitInd
-#define TRXIND pCont[0].trackInd
-#define OUTXIND pSet[0].outEn
+#define LXIND pContA.limitInd
+#define TRXIND pContA.trackInd
+#define OUTXIND pSetA.outOn
 char DUMMS[1] = "";
 valFmt localVals[]
 = {
@@ -149,7 +149,7 @@ String SendHTML(){
 	ptr += HMS(millis()/1000);
 	//ptr += " secs";
 	// mycountrr+= BROWSER_REFRESH;
-	//Serial.printf("LXIND %i, %i\n",LXIND, pCont[0].iLimit);
+	//Serial.printf("LXIND %i, %i\n",LXIND, pContA.iLimit);
 
 	ptr +="</body>\n";
 	ptr +="</html>\n";

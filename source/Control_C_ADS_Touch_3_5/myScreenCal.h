@@ -129,43 +129,40 @@ int tsRotate(int x){ // rotate touch screen 180 degrees
 // *****************ADC calibration ********************
 int calEntry(int dummy)
 {
-	calOff_IA = 0.0; 
-	calOff_VA = 0.0; 
-	calOff_IB = 0.0; 
-	calOff_VB = 0.0; 
+	calOff_I = 0.0; 
+	calOff_V = 0.0; 
 	return 0;
 }
 int calSave (int dummy)
 {
 	float temp;
 #define CONSTRAIN (0.05)			// only allow changes of 5% or less	
-	if (abs(calOff_VA) > SMALL_DIFF)
+	if (abs(calOff_V) > SMALL_DIFF)
 	{		
-		temp = calOff_VA * myADC[0][VOUT].maxVal / myADC[0][VOUT].curVal; // scale up the current reading * offset to MAX
-		Serial.printf("Volt max was: %5.3f, change by %5.3f to %5.3f\n", myADC[0][VOUT].maxVal, temp, myADC[0][VOUT].maxVal + temp);
-		Serial.printf("Current voltage would be %5.3f\n", myADC[0][VOUT].curVal + calOff_VA);
-		if (abs(temp / myADC[0][VOUT].maxVal) < CONSTRAIN) // don't allow more than a small % change
+		temp = calOff_V * myADC[VOUT].maxVal / myADC[VOUT].curVal; // scale up the current reading * offset to MAX
+		Serial.printf("Volt max was: %5.3f, change by %5.3f to %5.3f\n", myADC[VOUT].maxVal, temp, myADC[VOUT].maxVal + temp);
+		Serial.printf("Current voltage would be %5.3f\n", myADC[VOUT].curVal + calOff_V);
+		if (abs(temp / myADC[VOUT].maxVal) < CONSTRAIN) // don't allow more than a small % change
 		{ 		
-			myADC[0][VOUT].maxVal += temp; 
+			myADC[VOUT].maxVal += temp; 
 			// make input voltage cal factor the same as the output one.
-			myADC[0][VIN].maxVal = myADC[0][VOUT].maxVal;
+			myADC[VIN].maxVal = myADC[VOUT].maxVal;
 		    // make input voltage cal factor the same as the output one.
-			myADC[0][VIN].maxVal = myADC[0][VOUT].maxVal;
+			myADC[VIN].maxVal = myADC[VOUT].maxVal;
 			Serial.println("V cal done");
 		}
 		
 	}
-	if (abs(calOff_IA) > SMALL_DIFF)
+	if (abs(calOff_I) > SMALL_DIFF)
 	{
-		temp = calOff_IA * myADC[0][IOUT].maxVal / myADC[0][IOUT].curVal; 
-		Serial.printf("Current max was: %5.3f, change by %5.3f to %5.3f\n", myADC[0][IOUT].maxVal, temp, myADC[0][IOUT].maxVal + temp);	
-		if (abs(temp / myADC[0][IOUT].maxVal) < CONSTRAIN) // don't allow more than a small % change
+		temp = calOff_I * myADC[IOUT].maxVal / myADC[IOUT].curVal; 
+		Serial.printf("Current max was: %5.3f, change by %5.3f to %5.3f\n", myADC[IOUT].maxVal, temp, myADC[IOUT].maxVal + temp);	
+		if (abs(temp / myADC[IOUT].maxVal) < CONSTRAIN) // don't allow more than a small % change
 		{
-			myADC[0][IOUT].maxVal += temp; 
+			myADC[IOUT].maxVal += temp; 
 			Serial.println("I cal done");		
 		}		
 	}
-	Serial.println("calSave: FIX CAL B");
 	return 0;
 }
 
@@ -175,10 +172,10 @@ int exitCal(int x){
 }
 void currentZeroCal(void)
 {
-	  if(outOn == false)
+	  if(pSetA.outOn == false)
 	  {
-		myADC[0][IOUT].minVolts = myADC[0][IOUT].curVolts - IOUT_OFFSET;
-		//Serial.printf("Current zero = %5.3f\n",  myADC[0][IOUT].minVolts);
+		myADC[IOUT].minVolts = myADC[IOUT].curVolts - IOUT_OFFSET;
+		//Serial.printf("Current zero = %5.3f\n",  myADC[IOUT].minVolts);
 	  }
 }
 
@@ -186,32 +183,32 @@ void currentZeroCal(void)
 #define CAL_INCR (0.01)
 int upCalVolts(int x){
 	// calculate the calibration factors and update 
-	myADC[0][VOUT].maxVal += CAL_INCR;
-	myADC[0][VIN].maxVal = myADC[0][VOUT].maxVal;		// assume VIN has same calibration as VOUT	
+	myADC[VOUT].maxVal += CAL_INCR;
+	myADC[VIN].maxVal = myADC[VOUT].maxVal;		// assume VIN has same calibration as VOUT	
 	valChanged(VAL_CHGD); 
 	//dirtyScreen = true;
-	Serial.printf("V+ [%5.3f]\n", myADC[0][VOUT].maxVal);
+	Serial.printf("V+ [%5.3f]\n", myADC[VOUT].maxVal);
 }
 
 int upCalAmps(int x){
-	myADC[0][IOUT].maxVal += CAL_INCR;
+	myADC[IOUT].maxVal += CAL_INCR;
 	valChanged(VAL_CHGD);
 	//dirtyScreen = true;
-	Serial.printf("I+ [%5.3f]\n", myADC[0][IOUT].maxVal);
+	Serial.printf("I+ [%5.3f]\n", myADC[IOUT].maxVal);
 }
 int dnCalVolts(int x){
 	// calculate the calibration factors and update 
-	myADC[0][VOUT].maxVal -= CAL_INCR;
-	myADC[0][VIN].maxVal = myADC[0][VOUT].maxVal;		// assume VIN has same calibration as VOUT	
+	myADC[VOUT].maxVal -= CAL_INCR;
+	myADC[VIN].maxVal = myADC[VOUT].maxVal;		// assume VIN has same calibration as VOUT	
 	valChanged(VAL_CHGD);
 	//dirtyScreen = true;
-	Serial.printf("V- [%5.3f]\n", myADC[0][VOUT].maxVal);
+	Serial.printf("V- [%5.3f]\n", myADC[VOUT].maxVal);
 }
 int dnCalAmps(int x){
-	myADC[0][IOUT].maxVal -= CAL_INCR;
+	myADC[IOUT].maxVal -= CAL_INCR;
 	valChanged(VAL_CHGD);
 	//dirtyScreen = true;
-	Serial.printf("I- [%5.3f]\n", myADC[0][IOUT].maxVal);
+	Serial.printf("I- [%5.3f]\n", myADC[IOUT].maxVal);
 }
 
 */
