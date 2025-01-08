@@ -1,3 +1,23 @@
+/* Compile instructions
+
+USING PLATFORMIO:
+* open 2 copies of VSCode
+  - Install PlatformIO and open the ESP32-PSU-pio folder in it. This can be used to compile and upload
+  - Open the Control_C_ADS_Touch_3_5 folder in another. This can be used to edit the source
+PlatformIO will copy the source files from Control_C_ADS_Touch_3_5 every time you compile, (see hooks.py),
+so any changes made to source files in the ESP32-PSU-pio folder will be lost.
+
+DEPENDENCIES:
+https://github.com/LennartHennigs/ESPRotary.git 2.1.1
+https://github.com/LennartHennigs/Button2.git v1.5.4 (must be this version)
+Adafruit MCP4725 2.0.2
+Adafruit GFX Library 1.11.11
+XPT2046_Touchscreen 1.4
+Adafruit ILI9341 1.6.1
+Adafruit BusIO 1.16.2
+
+*/
+
 // No longer used
 // **************** BOARD_D_E have FANPIN on 26 CONTROL 14. 
 /* REMEMBER TO SET BOARD AND DISPLAY TYPE  BEFORE COMPILING!!!!
@@ -8,6 +28,7 @@
  *  control() measures inputs, sets outputs to desired setpoint, handling current limiting and tracking
  *  ADS1115: interrput driven, converts each used input in turn
 */
+
 // select a display type 
 //#define  ILI9488 // not working yet
 #define  ILI9341 
@@ -186,6 +207,7 @@ void loop() {
      SCPIgrpTrack();  // send out control group updates 
  //Serial.print("5");
      server.handleClient(); // http
+     ElegantOTA.loop(); // OTA updates
      count++;
  //diagPin(LOW);
   

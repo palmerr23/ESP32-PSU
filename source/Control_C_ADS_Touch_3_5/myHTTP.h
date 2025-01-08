@@ -6,6 +6,9 @@ Basic definitions for all instruments
 */
 #ifndef MYHTTP_H
 #define MYHTTP_H
+
+#include <ElegantOTA.h>
+
 String SendHTML();
 String tableItem(short row, short col);
 String clrSize(const GFXfont *font, uint16_t col);
@@ -276,6 +279,7 @@ void setup_http(){
 */
   server.onNotFound(handleNotFound);
 
+  ElegantOTA.begin(&server);
   server.begin();
   //server.on("/", handleRoot); // just one page
 }
