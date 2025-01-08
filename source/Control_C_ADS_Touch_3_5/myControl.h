@@ -10,6 +10,9 @@ Single instrument control for PSU - v2 will allow a control structure to be inpu
  Remote limiting behaves in the same way, reducing voltage setting proportionately
  Short circuit protection and other errors (overvoltage) turn off output
 */
+
+#define FAN_HYSTERESIS	2.0f
+
 void onOff(int8_t channel, bool status);
 void calSMPS(void);
 short SCPIsendGrpMessage(uint8_t tgrp, char *buf);
@@ -151,7 +154,7 @@ float control(settings * sp, controls * cp)
 	 vSetpoint = 0.0; 
  
    // fan control
-   fanOn(tRead >= pSetA.temperature); // needs hysteresis (fan hunts around)
+   fanOn(fanIsOn ? tRead >= ((float)(pSetA.temperature) - FAN_HYSTERESIS) : tRead >= pSetA.temperature);
   
     // control 	
 	if (abs(cp->vLastSet - vSetpoint) > 0.05) // reset limiting when setting changes significantly - might not be needed???
